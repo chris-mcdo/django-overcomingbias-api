@@ -1,0 +1,8 @@
+.venv
+*.code-workspace
+__pycache__
+/output
+/docs/build
+**/_version.py
+dist/
+.pytest_cache
