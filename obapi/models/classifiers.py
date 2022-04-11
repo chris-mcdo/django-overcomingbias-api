@@ -102,7 +102,7 @@ class Alias(models.Model):
 
     def validate_unique(self, exclude=None):
         super().validate_unique(exclude=exclude)
-        if exclude is None or "text" in exclude:
+        if exclude is not None and "text" in exclude:
             return
         # Raise error if there is a matching alias, and the match has a different pk
         try:
