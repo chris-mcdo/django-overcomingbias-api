@@ -1,4 +1,4 @@
-from .classifiers import (
+from obapi.models.classifiers import (
     Author,
     AuthorAlias,
     ExternalLink,
@@ -9,7 +9,7 @@ from .classifiers import (
     Topic,
     TopicAlias,
 )
-from .content import (
+from obapi.models.content import (
     AudioContentItem,
     ContentItem,
     OBContentItem,
@@ -18,7 +18,7 @@ from .content import (
     VideoContentItem,
     YoutubeContentItem,
 )
-from .sequence import Sequence, SequenceMember
+from obapi.models.sequence import Sequence, SequenceMember
 
 __all__ = [
     "Author",

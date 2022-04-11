@@ -5,9 +5,9 @@ from base64 import b64encode
 import cachetools.func
 import httpx
 from django.conf import settings
-from obscraper import get_posts_by_names, get_edit_dates
+from obscraper import get_edit_dates, get_posts_by_names
 
-from . import exceptions
+from obapi import exceptions
 
 
 def download_youtube_videos_json(video_ids):

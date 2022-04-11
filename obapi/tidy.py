@@ -2,7 +2,7 @@ import datetime
 
 from dateutil.parser import isoparse
 
-from . import utils
+from obapi import utils
 
 
 def tidy_youtube_videos_json(video_ids, raw_json):
