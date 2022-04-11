@@ -368,38 +368,43 @@ class OBContentItemAdmin(ContentItemAdmin):
         return super().changelist_view(request, extra_context)
 
     def update_view(self, request):
-        # If POST and _pull, do pull then redirect with success / error msg
-        # If POST and _sync, do sync then redirect with success / error msg
-        # Raise permission errors if necessary
-        if request.method == "POST":
-            if "_pull" in request.POST:
-                if not self.has_add_permission(request):
-                    raise PermissionDenied
-                created_items = OBContentItem.objects.download_new_items()
-                # Message info
-                changecount = len(created_items)
-                changetype = "created"
-                # Logging
-                for item in created_items:
-                    self.log_addition(request, item, f"Created item {item}.")
-            elif "_sync" in request.POST:
-                if not self.has_change_permission(request):
-                    raise PermissionDenied
-                updated_items = OBContentItem.objects.update_edited_items()
-                # Message info
-                changecount = len(updated_items)
-                changetype = "updated"
-                # Logging
-                for item in updated_items:
-                    self.log_addition(request, item, f"Updated item {item}.")
+        """View to update existing OB content items.
 
-            else:
-                raise SuspiciousOperation
+        Either downloads all new posts ("pull") or updates all edited posts ("sync").
 
-        else:
+        Works by (1) performing the requested operation, (2) logging the results and
+        messaging the user, and (3) redirecting to list / index page.
+        """
+        # Accept POST requests only
+        if request.method != "POST":
             raise Http404
 
-        # Message
+        if "_pull" in request.POST:
+            # Check permissions
+            if not self.has_add_permission(request):
+                raise PermissionDenied
+            # Pull items
+            created_items = OBContentItem.objects.download_new_items()
+            # Messaging & logging
+            changecount = len(created_items)
+            changetype = "created"
+            for item in created_items:
+                self.log_addition(request, item, f"Created item {item}.")
+        elif "_sync" in request.POST:
+            # Check permissions
+            if not self.has_change_permission(request):
+                raise PermissionDenied
+            # Sync items
+            updated_items = OBContentItem.objects.update_edited_items()
+            # Messaging & logging
+            changecount = len(updated_items)
+            changetype = "updated"
+            for item in updated_items:
+                self.log_addition(request, item, f"Updated item {item}.")
+        else:
+            raise SuspiciousOperation
+
+        # Send message
         if changecount == 0:
             msg = f"No items were {changetype}."
             status = messages.INFO
