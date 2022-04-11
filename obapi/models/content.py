@@ -54,8 +54,7 @@ class ContentItemQuerySet(InheritanceQuerySet):
                     # Clear old values, set new values
                     getattr(item, attr).set(value)
             # Only internalize links if some are added
-            if external_links is not None:
-                item.internalize_links(clear=True)
+            item.internalize_links(clear=external_links is not None)
         return item
 
     def get_or_create_authors_by_names(self, author_names):
