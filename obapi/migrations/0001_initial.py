@@ -361,7 +361,7 @@ class Migration(migrations.Migration):
                     models.BooleanField(
                         default=False,
                         editable=False,
-                        help_text="True for the alias which which equals the owner name.",
+                        help_text=("True for the alias which equals the owner name."),
                     ),
                 ),
                 (
@@ -399,7 +399,7 @@ class Migration(migrations.Migration):
                     models.BooleanField(
                         default=False,
                         editable=False,
-                        help_text="True for the alias which which equals the owner name.",
+                        help_text="True for the alias which equals the owner name.",
                     ),
                 ),
                 (
@@ -492,7 +492,7 @@ class Migration(migrations.Migration):
                     models.BooleanField(
                         default=False,
                         editable=False,
-                        help_text="True for the alias which which equals the owner name.",
+                        help_text="True for the alias which equals the owner name.",
                     ),
                 ),
                 (
@@ -585,7 +585,7 @@ class Migration(migrations.Migration):
                     models.BooleanField(
                         default=False,
                         editable=False,
-                        help_text="True for the alias which which equals the owner name.",
+                        help_text="True for the alias which equals the owner name.",
                     ),
                 ),
                 (

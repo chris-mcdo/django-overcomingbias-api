@@ -87,7 +87,7 @@ class Alias(models.Model):
     protected = models.BooleanField(
         default=False,
         editable=False,
-        help_text="True for the alias which which equals the owner name.",
+        help_text="True for the alias which equals the owner name.",
     )
     owner = None
 
