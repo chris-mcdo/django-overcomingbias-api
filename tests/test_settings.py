@@ -1,3 +1,5 @@
+import os
+
 # Applications
 
 INSTALLED_APPS = [
@@ -7,7 +9,11 @@ INSTALLED_APPS = [
 ]
 
 # Secrets
-SECRET_KEY = "fake-key"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "fake-key")
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+
 
 # Debug mode
 DEBUG = False
