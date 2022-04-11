@@ -1,7 +1,8 @@
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
+from django.db.models import UniqueConstraint
+from django.db.models.functions import Lower
 from django.urls import reverse
-
 from obapi import utils
 
 
@@ -94,6 +95,7 @@ class Alias(models.Model):
     class Meta:
         abstract = True
         verbose_name_plural = "aliases"
+        constraints = [UniqueConstraint(Lower("text"), name="%(class)s_is_unique")]
 
     def __str__(self):
         return f"{self.text} ({self.owner.name})"
