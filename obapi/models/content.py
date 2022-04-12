@@ -66,9 +66,9 @@ class ContentItemQuerySet(InheritanceQuerySet):
                 Author.objects.filter(
                     Q(alias__text__iexact=author_name)
                     | Q(slug=utils.to_slug(author_name))
-                ).get_or_create(
-                    alias__text__iexact=author_name, defaults={"name": author_name}
                 )
+                .distinct()
+                .get_or_create(defaults={"name": author_name})
                 for author_name in author_names
             ]
             return [author[0] for author in authors]
@@ -100,7 +100,9 @@ class ContentItemQuerySet(InheritanceQuerySet):
                 # If that fails, try to get a tag with alias = classifier_name
                 # If no such tag exists, create a new one
                 tags.append(
-                    Tag.objects.filter(query).get_or_create(
+                    Tag.objects.filter(query)
+                    .distinct()
+                    .get_or_create(
                         defaults={"name": classifier_name},
                     )[0]
                 )
