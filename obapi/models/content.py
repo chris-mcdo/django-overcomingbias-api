@@ -64,7 +64,8 @@ class ContentItemQuerySet(InheritanceQuerySet):
             # Match by alias or slug
             authors = [
                 Author.objects.filter(
-                    Q(alias__text__iexact=author_name) | Q(slug=utils.slug(author_name))
+                    Q(alias__text__iexact=author_name)
+                    | Q(slug=utils.to_slug(author_name))
                 ).get_or_create(
                     alias__text__iexact=author_name, defaults={"name": author_name}
                 )
@@ -83,7 +84,7 @@ class ContentItemQuerySet(InheritanceQuerySet):
             for classifier_name in classifier_names:
                 # Match by alias or slug
                 query = Q(alias__text__iexact=classifier_name) | Q(
-                    slug=utils.slug(classifier_name)
+                    slug=utils.to_slug(classifier_name)
                 )
                 try:
                     ideas.append(Idea.objects.get(query))
@@ -99,8 +100,7 @@ class ContentItemQuerySet(InheritanceQuerySet):
                 # If that fails, try to get a tag with alias = classifier_name
                 # If no such tag exists, create a new one
                 tags.append(
-                    Tag.objects.get_or_create(
-                        query,
+                    Tag.objects.filter(query).get_or_create(
                         defaults={"name": classifier_name},
                     )[0]
                 )
@@ -294,7 +294,7 @@ class ContentItem(models.Model):
             self.internal_links.clear()
         for pk, url in self.external_links.values_list("pk", "url"):
             try:
-                match = ContentItem.objects.get_by_url(url)
+                match = ContentItem.objects.find_by_url(url)
             except (ValueError, ContentItem.DoesNotExist):
                 continue
             else:
