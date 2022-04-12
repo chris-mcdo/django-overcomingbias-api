@@ -21,6 +21,9 @@ from obapi.models import Author, ExternalLink, Idea, Tag, Topic
 class ContentItemQuerySet(InheritanceQuerySet):
     """Custom QuerySet which can "assemble" and save objects."""
 
+    # Converter from URLs to item IDs
+    url_converters = ()
+
     def save_item(self, item=None, **kwargs):
         """Create a new item or update an existing item."""
         adding = item is None
@@ -192,7 +195,7 @@ class ContentItemQuerySet(InheritanceQuerySet):
         # Try to use get_by_url for current class (if implemented)
         try:
             return self.get_by_url(url)
-        except (ValueError, NotImplementedError):
+        except ValueError:
             # Don't catch Model.DoesNotExist
             pass
 
@@ -200,13 +203,30 @@ class ContentItemQuerySet(InheritanceQuerySet):
         for model in self.model.__subclasses__():
             try:
                 return model.objects.find_by_url(url)
-            except ValueError:  # No need to catch NotImplementedError
+            except ValueError:
                 pass
             # Don't catch model.DoesNotExist
         raise ValueError  # URL did not match any ContentItem URL format
 
     def get_by_url(self, url):
-        raise NotImplementedError(f"No get_by_url method for type {type(self)}")
+        """Get a ContentItem by its URL.
+
+        Raises
+        ------
+        ValueError
+            If the URL does not match any content type.
+        ContentItem.DoesNotExist
+            If the URL matches a content type but no content item was found.
+        """
+
+        for converter, field in self.url_converters:
+            try:
+                item_id = converter.to_id(url)
+            except ValueError:
+                pass
+            else:
+                return self.get(**{field: item_id})
+        raise ValueError(f"URL did not match any known format for type {type(self)}")
 
     def recent(self):
         """Return all content items sorted by publish date."""
@@ -319,6 +339,7 @@ class VideoContentItem(ContentItem):
 
 class YoutubeContentItemQuerySet(ContentItemQuerySet):
     assemble_by_ids = assemble_youtube_content_items
+    url_converters = ((YoutubeVideoURLConverter(), "item_id"),)
 
 
 class YoutubeContentItem(VideoContentItem):
@@ -372,6 +393,7 @@ class AudioContentItem(ContentItem):
 
 class SpotifyContentItemQuerySet(ContentItemQuerySet):
     assemble_by_ids = assemble_spotify_content_items
+    url_converters = ((SpotifyEpisodeURLConverter(), "item_id"),)
 
 
 class SpotifyContentItem(AudioContentItem):
@@ -420,6 +442,10 @@ class TextContentItem(ContentItem):
 
 class OBContentItemQuerySet(ContentItemQuerySet):
     assemble_by_ids = assemble_ob_content_items
+    url_converters = (
+        (OBPostLongURLConverter(), "item_id"),
+        (OBPostShortURLConverter(), "ob_post_number"),
+    )
 
     def download_new_items(self, min_publish_date=None):
         """Add posts whose names are not found in the database."""
@@ -462,29 +488,6 @@ class OBContentItemQuerySet(ContentItemQuerySet):
         update_count = self.bulk_update(all_items, ["edit_date"], batch_size=1000)
 
         return update_count
-
-    def get_by_url(self, url):
-        """Get an OBContentItem by its URL.
-
-        Raises
-        ------
-        ValueError
-            If the URL does not match the OB post URL pattern.
-        ContentItem.DoesNotExist
-            If the URL matches the OB post URL pattern but the corresponding post was
-            not found.
-        """
-        try:
-            return super().get_by_url(url)
-        except ValueError:
-            pass
-
-        try:
-            post_number = OBPostShortURLConverter().to_id(url)
-        except ValueError:
-            raise
-        else:
-            return self.get(ob_post_number=post_number)
 
 
 class OBContentItem(TextContentItem):
