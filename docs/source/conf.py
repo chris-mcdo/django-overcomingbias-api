@@ -22,7 +22,7 @@ copyright = "2022, Christopher McDonald"
 author = "Christopher McDonald"
 
 # The full version, including alpha/beta/rc tags
-release = version("obapi")
+release = version("django-overcomingbias-api")
 version = ".".join(release.split(".")[:2])
 
 
