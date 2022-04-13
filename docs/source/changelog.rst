@@ -18,4 +18,6 @@ standard.
 django-overcomingbias-api 0.1.0 (2022-04-13)
 --------------------------------------------
 
-Initial release
+Initial release.
+
+See docs at `<https://django-overcomingbias-api.readthedocs.io/en/stable/>`_.
