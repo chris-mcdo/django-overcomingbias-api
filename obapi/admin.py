@@ -25,6 +25,7 @@ from obapi.forms import (
 from obapi.models import (
     Author,
     AuthorAlias,
+    ContentItem,
     Idea,
     IdeaAlias,
     OBContentItem,
@@ -35,6 +36,10 @@ from obapi.models import (
     TopicAlias,
     YoutubeContentItem,
 )
+from obapi.models.classifiers import ExternalLink
+
+# Inlines
+# https://docs.djangoproject.com/en/4.0/ref/contrib/admin/#inlinemodeladmin-objects
 
 
 class AliasInlineFormSet(BaseInlineFormSet):
@@ -94,6 +99,17 @@ class TopicAliasInline(AliasInline):
 
 class TagAliasInline(AliasInline):
     model = TagAlias
+
+
+class ContentItemInline(admin.StackedInline):
+    model = ContentItem.external_links.through
+    extra = 0
+
+    autocomplete_fields = ("contentitem",)
+
+
+# Admin actions
+# https://docs.djangoproject.com/en/4.0/ref/contrib/admin/actions/
 
 
 @admin.action(description="Merge objects", permissions=["change"])
@@ -213,6 +229,10 @@ def convert_to_tags(modeladmin, request, queryset):
     convert_aliased_objects(modeladmin, request, queryset, Tag)
 
 
+# Model Admins
+# https://docs.djangoproject.com/en/4.0/ref/contrib/admin/#modeladmin-objects
+
+
 @admin.register(Author)
 class AuthorAdmin(admin.ModelAdmin):
     inlines = [AuthorAliasInline]
@@ -222,6 +242,7 @@ class AuthorAdmin(admin.ModelAdmin):
         convert_to_topics,
         convert_to_tags,
     ]
+    search_fields = ("name",)
 
 
 @admin.register(Idea)
@@ -233,6 +254,7 @@ class IdeaAdmin(admin.ModelAdmin):
         convert_to_topics,
         convert_to_tags,
     ]
+    search_fields = ("name",)
 
 
 @admin.register(Topic)
@@ -244,6 +266,7 @@ class TopicAdmin(admin.ModelAdmin):
         convert_to_ideas,
         convert_to_tags,
     ]
+    search_fields = ("name",)
 
 
 @admin.register(Tag)
@@ -255,15 +278,46 @@ class TagAdmin(admin.ModelAdmin):
         convert_to_ideas,
         convert_to_topics,
     ]
+    search_fields = ("name",)
 
 
-class ContentItemAdmin(admin.ModelAdmin):
+@admin.register(ExternalLink)
+class ExternalLinkAdmin(admin.ModelAdmin):
+    inlines = [
+        ContentItemInline,
+    ]
+    exclude = ("external_links",)
+    search_fields = ("url",)
+    actions = ("delete_unreferenced_links",)
+
+    @admin.action(description="Delete unreferenced links", permissions=["delete"])
+    def delete_unreferenced_links(self, request, queryset):
+        delete_count, details = queryset.filter(content__isnull=True).delete()
+        self.message_user(
+            request,
+            f"{delete_count} links deleted",
+            messages.INFO,
+        )
+
+
+class ContentItemAdminTemplate(admin.ModelAdmin):
     add_form_template = "admin/obapi/add_form.html"
     AddForm = None  # override in subclasses
 
     actions = ["update_selected_items", "internalize_links"]
 
     readonly_fields = ("create_timestamp", "update_timestamp", "download_timestamp")
+
+    search_fields = ("title",)
+
+    autocomplete_fields = (
+        "authors",
+        "ideas",
+        "topics",
+        "tags",
+        "external_links",
+        "internal_links",
+    )
 
     def add_view(self, request, form_url="", extra_context=None):
         if not self.has_add_permission(request):
@@ -336,18 +390,32 @@ class ContentItemAdmin(admin.ModelAdmin):
             )
 
 
+@admin.register(ContentItem)
+class ContentItemAdmin(ContentItemAdminTemplate):
+    # Revert to standard add view
+    def add_view(self, request, form_url="", extra_context=None):
+        return self.changeform_view(request, None, form_url, extra_context)
+
+    @admin.action(description="Update selected items", permissions=["change"])
+    def update_selected_items(self, request, queryset):
+        for model in (YoutubeContentItem, SpotifyContentItem, OBContentItem):
+            model.objects.filter(
+                pk__in=queryset.select_subclasses(model)
+            ).update_items()
+
+
 @admin.register(YoutubeContentItem)
-class YoutubeContentItemAdmin(ContentItemAdmin):
+class YoutubeContentItemAdmin(ContentItemAdminTemplate):
     AddForm = AddYoutubeContentItemForm
 
 
 @admin.register(SpotifyContentItem)
-class SpotifyContentItemAdmin(ContentItemAdmin):
+class SpotifyContentItemAdmin(ContentItemAdminTemplate):
     AddForm = AddSpotifyContentItemForm
 
 
 @admin.register(OBContentItem)
-class OBContentItemAdmin(ContentItemAdmin):
+class OBContentItemAdmin(ContentItemAdminTemplate):
     AddForm = AddOBContentItemForm
 
     def get_urls(self):
@@ -400,7 +468,7 @@ class OBContentItemAdmin(ContentItemAdmin):
             changecount = len(updated_items)
             changetype = "updated"
             for item in updated_items:
-                self.log_addition(request, item, f"Updated item {item}.")
+                self.log_change(request, item, f"Updated item {item}.")
         else:
             raise SuspiciousOperation
 
