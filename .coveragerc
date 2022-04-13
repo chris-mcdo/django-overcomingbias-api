@@ -1,0 +1,8 @@
+[run]
+include = 
+  obapi/*
+  */lib/python*/site-packages/obapi/*
+  *\Lib\site-packages\obapi\*
+branch = True
+# parallel = True
+
