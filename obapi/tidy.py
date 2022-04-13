@@ -1,4 +1,5 @@
 import datetime
+import re
 
 from dateutil.parser import isoparse
 
@@ -79,10 +80,11 @@ def _tidy_spotify_episode_json(item_json):
 def _tidy_ob_post_object(item_post):
     if item_post is None:
         return None
+    internal_links = [_tidy_ob_internal_link(link) for link in item_post.internal_links]
     post = {
         "author_names": [item_post.author],
         "classifier_names": [*item_post.tags, *item_post.categories],
-        "link_urls": [*item_post.internal_links, *item_post.external_links],
+        "link_urls": [*internal_links, *item_post.external_links],
         "title": item_post.title,
         "publish_date": item_post.publish_date,
         "edit_date": item_post.edit_date,
@@ -96,3 +98,12 @@ def _tidy_ob_post_object(item_post):
         "ob_comments": item_post.comments,
     }
     return post
+
+
+def _tidy_ob_internal_link(url: str):
+    """Fix common errors with internal links."""
+    url = url.strip()  # strip whitespace
+    url = re.sub(r"\.htm(?!l)", ".html", url)  # ensure .html not .htm
+    url = re.sub(r"-+", "-", url)  # collapse duplicate hyphens
+    url = re.sub(r"-\.html", ".htm", url)  # remove trailing hyphens
+    return url
