@@ -125,6 +125,11 @@ class ContentItemQuerySet(InheritanceQuerySet):
         if item_ids is None:
             # Construct item ids from QuerySet
             item_ids = [item.item_id for item in self]
+
+        # Return if no IDs
+        if item_ids == []:
+            return []
+
         assembled_items = type(self).assemble_by_ids(item_ids)
         return assembled_items
 
@@ -448,7 +453,10 @@ class OBContentItemQuerySet(ContentItemQuerySet):
     )
 
     def download_new_items(self, min_publish_date=None):
-        """Add posts whose names are not found in the database."""
+        """Add posts whose names are not found in the database.
+
+        Do not return items which were not successfully created.
+        """
         if min_publish_date is None:
             try:
                 # Ignore names of posts published before first download date
@@ -468,15 +476,14 @@ class OBContentItemQuerySet(ContentItemQuerySet):
         names_to_add = [name for name in site_names if name not in db_names]
 
         created_items = self.create_items(names_to_add)
-        return created_items
+        return [item for item in created_items if item is not None]
 
     def update_edited_items(self):
         """Update posts with unsaved edits."""
         self.update_last_edit_dates()
-        updated_items = self.filter(
-            edit_date__gte=F("download_timestamp")
-        ).update_items()
-        return updated_items
+        items_for_update = self.filter(edit_date__gte=F("download_timestamp"))
+        updated_items = items_for_update.update_items()
+        return [result[0] for result in updated_items]
 
     def update_last_edit_dates(self):
         """Synchronise edit dates with the overcomingbias site."""
