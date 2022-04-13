@@ -37,15 +37,12 @@ class TestDownloadYoutubeVideosJSON:
 
 @require_spotify_api_auth
 class TestDownloadSpotifyEpisodesJSON:
-    def setUp(self):
-        # Clear cache before running tests
-        _get_spotify_api_token.cache_clear()
-
     def test_raises_error_for_invalid_episode_ids(self):
         with pytest.raises(APICallError):
             download_spotify_episodes_json(episode_ids=["123"])
 
     def test_raises_error_for_invalid_user_credentials(self, settings):
+        _get_spotify_api_token.cache_clear()
         settings.SPOTIFY_CLIENT_ID = "fake-id"
         with pytest.raises(APICallError):
             download_spotify_episodes_json(episode_ids=["6MAszRR6tdDnMsjgVdw4Jh"])
