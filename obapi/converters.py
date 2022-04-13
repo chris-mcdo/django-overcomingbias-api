@@ -22,10 +22,10 @@ class URLConverter:
 class YoutubeVideoURLConverter(URLConverter):
     # Youtube video pattern: https://stackoverflow.com/a/37704433
     regex = (
-        r"^(?:(?:https?:)?//)?(?:(?:www|m)\.)?(?:youtube(?:-nocookie)?\.com|youtu\.be)"
+        r"(?:(?:https?:)?//)?(?:(?:www|m)\.)?(?:youtube(?:-nocookie)?\.com|youtu\.be)"
         r"/(?:[\w\-]+\?v=|embed/|v/)?"
         f"({YOUTUBE_VIDEO_ID_REGEX})"
-        r"\S*$"
+        r"\S*"
     )
 
     def to_url(self, value):
@@ -34,7 +34,7 @@ class YoutubeVideoURLConverter(URLConverter):
 
 class SpotifyEpisodeURLConverter(URLConverter):
     regex = (
-        r"^(?:(?:https?:)?//)?(?:open\.spotify\.com/episode/)"
+        r"(?:(?:https?:)?//)?(?:open\.spotify\.com/episode/)"
         f"({SPOTIFY_EPISODE_ID_REGEX})"
         r"\S*"
     )
@@ -44,14 +44,18 @@ class SpotifyEpisodeURLConverter(URLConverter):
 
 
 class OBPostLongURLConverter(URLConverter):
-    regex = r"^https?://www\.overcomingbias\.com/" f"({OB_POST_NAME_REGEX})" r"\.html$"
+    regex = (
+        rf"(?:https?://)?(?:www\.)?overcomingbias\.com/({OB_POST_NAME_REGEX})\.html?"
+    )
 
     def to_url(self, value):
         return f"https://www.overcomingbias.com/{value}.html"
 
 
 class OBPostShortURLConverter(URLConverter):
-    regex = r"^https?://www\.overcomingbias\.com/\?p=" f"({OB_POST_NUMBER_REGEX})" r"$"
+    regex = (
+        r"(?:https?://)?(?:www\.)?overcomingbias\.com/\?p=" f"({OB_POST_NUMBER_REGEX})"
+    )
 
     def to_url(self, value):
         return f"https://www.overcomingbias.com/?p={value}"
