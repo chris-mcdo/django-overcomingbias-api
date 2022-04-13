@@ -13,7 +13,7 @@ Basic Usage
 -----------
 
 A graphical user interface is provided through the
-`Django admin site <https://docs.djangoproject.com/en/dev/ref/contrib/admin/>_`.
+`Django admin site <https://docs.djangoproject.com/en/dev/ref/contrib/admin/>`_.
 
 To initialise a database of all overcomingbias posts, use the "pull" button:
 
@@ -49,19 +49,20 @@ Alternatively, provide your own views for each post:
 .. code-block:: python
 
     # urls.py
-
+    from django.urls import path, register_converter
     from obapi.converters import OBPostNameConverter
+    from myapp.views import ob_detail_view
+
     register_converter(OBPostNameConverter, "ob_name")
     urlpatterns = [
         ...
         path(
             "content/overcomingbias/<ob_name:item_id>",
-            views.ob_detail, # custom view
+            ob_detail_view, # custom view
             name="obcontentitem_detail",
         ),
         ...
     ]
-
 
 Features
 --------
@@ -77,10 +78,9 @@ Currently, content can be scraped from the following sources:
 Documentation
 -------------
 
-..  Read the full documentation `here <https://django-overcomingbias-api.readthedocs.io/en/stable/>`_,
-    including the `Installation and Getting Started Guide
-    <https://django-overcomingbias-api.readthedocs.io/en/stable/getting-started.html>`_ and the
-    `Public API Reference <https://django-overcomingbias-api.readthedocs.io/en/stable/api.html>`_.
+Read the full documentation `here <https://django-overcomingbias-api.readthedocs.io/en/stable/>`_,
+including the `Installation and Getting Started Guide
+<https://django-overcomingbias-api.readthedocs.io/en/stable/getting-started.html>`_.
 
 
 Bugs/Requests
@@ -93,9 +93,9 @@ to submit bugs or request features.
 Changelog
 ---------
 
-.. See the
-    `Changelog <https://django-overcomingbias-api.readthedocs.io/en/stable/changelog.html>`_
-    for a list of fixes and enhancements at each version.
+See the
+`Changelog <https://django-overcomingbias-api.readthedocs.io/en/stable/changelog.html>`_
+for a list of fixes and enhancements at each version.
 
 License
 -------
