@@ -1,31 +1,67 @@
-django-overcomingbias-api: django-overcomingbias-api: an API to Robin Hanson's content
-======================================================================================
+django-overcomingbias-api: an API to Robin Hanson's content
+===========================================================
 
 ``django-overcomingbias-api`` is a standalone `Django <https://www.djangoproject.com/>`_
-app which creates an API to (some of) Robin Hanson's content.
+app which lets you create and manage an API to (some of) Robin Hanson's content.
 
 It scrapes the `overcomingbias <https://www.overcomingbias.com/>`_ blog (and other
-sites) and makes this data available via
+sites) and presents the data in a structured form via
 `REST <https://en.wikipedia.org/wiki/Representational_state_transfer>`_ and
 `GraphQL <https://graphql.org/>`_ APIs.
-
-Quick start
------------
-
-.. Install with pip
-    Add to installed apps
-    Any necessary patching
-    Include URLS
-    Migrate
-    View in admin site
-    Or send it a request
 
 Basic Usage
 -----------
 
-.. Main API functions
+A graphical user interface is provided through the
+`Django admin site <https://docs.djangoproject.com/en/dev/ref/contrib/admin/>_`.
 
-.. Use of admin site, sync / pull, admin actions
+To initialise a database of all overcomingbias posts, use the "pull" button:
+
+.. image:: https://raw.githubusercontent.com/chris-mcdo/django-overcomingbias-api/main/docs/source/_static/pull-and-sync.png
+   :align: center
+   :alt: Create and update overcomingbias posts from the admin site
+
+Add new posts with "pull", and update modified posts with "sync".
+(You can also add content from YouTube and Spotify.)
+
+Categorise content according to the "ideas" and "topics" it contains, or by generic
+"tags".
+Use the admin site and custom
+`Admin Actions <https://docs.djangoproject.com/en/dev/ref/contrib/admin/actions/>`_
+to manage content.
+
+*Coming soon* Link the app in your URL config to access the REST or GraphQL APIs:
+
+.. code-block:: python
+
+    # urls.py
+
+    urlpatterns = [
+        ...
+        path("", include("obapi.urls")),
+        ...
+    ]
+
+..  Example of using GraphQL / REST API
+
+Alternatively, provide your own views for each post:
+
+.. code-block:: python
+
+    # urls.py
+
+    from obapi.converters import OBPostNameConverter
+    register_converter(OBPostNameConverter, "ob_name")
+    urlpatterns = [
+        ...
+        path(
+            "content/overcomingbias/<ob_name:item_id>",
+            views.ob_detail, # custom view
+            name="obcontentitem_detail",
+        ),
+        ...
+    ]
+
 
 Features
 --------
@@ -41,8 +77,11 @@ Currently, content can be scraped from the following sources:
 Documentation
 -------------
 
-.. Where to find docs?
-    Getting started guide + full reference
+..  Read the full documentation `here <https://django-overcomingbias-api.readthedocs.io/en/stable/>`_,
+    including the `Installation and Getting Started Guide
+    <https://django-overcomingbias-api.readthedocs.io/en/stable/getting-started.html>`_ and the
+    `Public API Reference <https://django-overcomingbias-api.readthedocs.io/en/stable/api.html>`_.
+
 
 Bugs/Requests
 -------------
