@@ -1,5 +1,10 @@
 import os
 
+from dotenv import find_dotenv, load_dotenv
+
+# take environment variables from .env
+load_dotenv(find_dotenv())
+
 # Applications
 
 INSTALLED_APPS = [
