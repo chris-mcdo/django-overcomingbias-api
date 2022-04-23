@@ -376,7 +376,7 @@ class YoutubeContentItem(VideoContentItem):
     def site_url(self):
         return "https://www.youtube.com/"
 
-    @property
+    @classmethod
     def site_name(self):
         return "YouTube"
 
@@ -425,7 +425,7 @@ class SpotifyContentItem(AudioContentItem):
     def site_url(self):
         return "https://open.spotify.com/"
 
-    @property
+    @classmethod
     def site_name(self):
         return "Spotify"
 
@@ -529,7 +529,7 @@ class OBContentItem(TextContentItem):
     def site_url(self):
         return "https://www.overcomingbias.com/"
 
-    @property
+    @classmethod
     def site_name(self):
         return "OvercomingBias"
 
