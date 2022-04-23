@@ -531,7 +531,7 @@ class OBContentItem(TextContentItem):
 
     @property
     def site_name(self):
-        return "Overcoming Bias"
+        return "OvercomingBias"
 
     class Meta:
         verbose_name = "overcomingbias post"
