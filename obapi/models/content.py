@@ -244,7 +244,7 @@ class ContentItem(models.Model):
     create_timestamp = models.DateTimeField("creation date", auto_now_add=True)
     update_timestamp = models.DateTimeField("update date", auto_now=True)
     download_timestamp = models.DateTimeField(
-        "download date", editable=False, blank=True
+        "download date", editable=False, null=True
     )
 
     title = models.CharField(max_length=100, help_text="Title of content.")
