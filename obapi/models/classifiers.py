@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.urls import reverse
 from obapi import utils
@@ -45,6 +46,23 @@ class AliasedModel(models.Model):
             "explore_detail",
             kwargs={"model_name": model_name, "instance_name": self.slug},
         )
+
+    def validate_unique(self, exclude=None):
+        super().validate_unique(exclude=exclude)
+        if exclude is not None and "text" in exclude:
+            return
+        # Raise error if there is a matching alias, and the match has a different pk
+        alias_model = self.aliases.model
+        try:
+            match = alias_model.objects.get(text=utils.to_slug(self.name))
+        except alias_model.DoesNotExist:
+            return
+        else:
+            if match.owner != self:
+                self.refresh_from_db(fields=["name"])
+                raise ValidationError(
+                    {"name": "The alias of this name is already taken."}, code="invalid"
+                )
 
 
 class Author(AliasedModel):

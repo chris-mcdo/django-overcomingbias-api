@@ -9,11 +9,13 @@ from django.core.exceptions import (
 )
 from django.db import IntegrityError, transaction
 from django.db.models import Q
+from django.forms import BaseInlineFormSet
 from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils.translation import ngettext
 
+from obapi import utils
 from obapi.exceptions import APICallError
 from obapi.forms import (
     AddOBContentItemForm,
@@ -40,8 +42,28 @@ from obapi.models.classifiers import ExternalLink
 # https://docs.djangoproject.com/en/4.0/ref/contrib/admin/#inlinemodeladmin-objects
 
 
+class AliasInlineFormset(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        # Ensure aliases differ from the name
+        name_slug = utils.to_slug(self.data["name"])
+        forms_to_delete = self.deleted_forms
+        valid_forms = [
+            form
+            for form in self.forms
+            if form.is_valid() and form not in forms_to_delete
+        ]
+
+        for form in valid_forms:
+            # If an alias matches the current name, mark its form for deletion
+            alias = form.cleaned_data["text"]
+            if alias == name_slug:
+                form.cleaned_data["DELETE"] = True
+
+
 class AliasInline(admin.TabularInline):
     extra = 0
+    formset = AliasInlineFormset
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(protected=False)
