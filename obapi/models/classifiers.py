@@ -10,7 +10,9 @@ class AliasedModel(models.Model):
     """Base class for models with aliases."""
 
     name = models.CharField(max_length=100, unique=True, help_text="Name.")
-    slug = models.SlugField(max_length=100, unique=True, null=True, editable=False)
+    slug = models.SlugField(
+        max_length=utils.SLUG_MAX_LENGTH, unique=True, null=True, editable=False
+    )
     description = models.CharField(
         max_length=100, help_text="Brief description.", blank=True
     )

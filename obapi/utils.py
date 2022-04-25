@@ -13,6 +13,8 @@ ISO_8601_DURATION_PATTERN = re.compile(
     )
 )
 
+SLUG_MAX_LENGTH = 100
+
 
 def parse_duration(duration):
     if (components := ISO_8601_DURATION_PATTERN.search(duration)) is None:
@@ -32,4 +34,4 @@ def plaintext_to_html(text):
 
 
 def to_slug(text):
-    return slugify(text)
+    return slugify(text, max_length=SLUG_MAX_LENGTH)
