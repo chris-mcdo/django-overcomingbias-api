@@ -37,6 +37,7 @@ class BaseSequence(models.Model):
     def clean(self):
         # Set slug from title
         self.slug = utils.to_slug(self.title)
+        super().clean()
 
     def save(self, *args, **kwargs):
         """Save a Sequence object."""
