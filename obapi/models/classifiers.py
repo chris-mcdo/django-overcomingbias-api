@@ -1,6 +1,7 @@
 from django.db import models, transaction
 from django.urls import reverse
 from obapi import utils
+from obapi.modelfields import SimpleSlugField
 
 
 class AliasedModel(models.Model):
@@ -69,7 +70,7 @@ class Alias(models.Model):
     `name` attribute, or the subclass should override the __str__ method.
     """
 
-    text = models.SlugField(
+    text = SimpleSlugField(
         max_length=utils.SLUG_MAX_LENGTH, help_text="Alias text.", unique=True
     )
     protected = models.BooleanField(

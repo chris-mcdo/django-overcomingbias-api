@@ -106,9 +106,9 @@ class TestValidateUniqueAlias:
     def test_succeeds_for_unique_aliases(self):
         # Arrange
         law = Topic.objects.create(name="Law", description="About law.")
-        law.aliases.create(text="Legal")
+        law.aliases.create(text="legal")
         norms = Topic.objects.create(name="Norms", description="About norms.")
-        social = TopicAlias(text="Social Norms", owner=norms)
+        social = TopicAlias(text="social-norms", owner=norms)
 
         # Act & assert
         try:
@@ -124,9 +124,9 @@ class TestValidateUniqueAlias:
     def test_succeeds_when_another_object_type_has_same_alias(self):
         # Arrange
         law_topic = Topic.objects.create(name="Law", description="About law.")
-        law_topic.aliases.create(text="Rules")
+        law_topic.aliases.create(text="rules")
         norms_idea = Idea.objects.create(name="Norms", description="About norms.")
-        rules = IdeaAlias(text="Rules", owner=norms_idea)
+        rules = IdeaAlias(text="rules", owner=norms_idea)
 
         # Act & assert
         try:

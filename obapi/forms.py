@@ -1,6 +1,12 @@
 from django import forms
-
 from obapi.models import OBContentItem, SpotifyContentItem, YoutubeContentItem
+
+__all__ = [
+    "AddContentItemForm",
+    "AddYoutubeContentItemForm",
+    "AddSpotifyContentItemForm",
+    "AddOBContentItemForm",
+]
 
 
 class AddContentItemForm(forms.ModelForm):

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from obapi import utils
+from obapi.modelfields import SimpleSlugField
 from ordered_model.models import OrderedModel
 
 
@@ -14,7 +15,7 @@ class BaseSequence(models.Model):
         related_name="%(class)ss",
     )
     title = models.CharField(max_length=100, help_text="Sequence title.")
-    slug = models.SlugField(max_length=utils.SLUG_MAX_LENGTH, null=True, editable=False)
+    slug = SimpleSlugField(max_length=utils.SLUG_MAX_LENGTH, null=True, editable=False)
     description = models.TextField(
         blank=True, max_length=5000, help_text="Description of sequence."
     )
