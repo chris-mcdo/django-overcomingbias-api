@@ -7,35 +7,43 @@ from obapi.models.classifiers import IdeaAlias, TopicAlias
 
 @pytest.mark.django_db
 class TestCreateAliasedModel:
-    def test_create_valid_object_with_two_aliases(self):
+    def test_create_valid_topic(self):
         # Act
         Topic.objects.create(name="Law&Øther", description="Law and other topics.")
 
         # Assert
         obj = Topic.objects.get(name="Law&Øther")
         assert obj.name == "Law&Øther"
-        assert obj.slug == "law-other"
+        assert obj.get_slug() == "law-other"
         assert obj.description == "Law and other topics."
 
         obj_aliases = obj.aliases.all()
-        expected_aliases = {"law-other", "Law&Øther"}
-        assert set(obj_aliases.values_list("text", flat=True)) == expected_aliases
-        assert all(obj_aliases.values_list("protected", flat=True))
+        assert obj_aliases.count() == 1
 
-    def test_create_valid_model_with_one_alias(self):
+        alias = obj_aliases.get()
+        assert alias.text == "law-other"
+        assert alias.protected
+
+    def test_create_valid_topic_with_aliases(self):
         # Act
-        Topic.objects.create(name="topic-two")  # slug is same as name
+        topic = Topic.objects.create(name="topic-two")
+        topic.aliases.create(text="Second Topic")
 
         # Assert
         obj = Topic.objects.get(name="topic-two")
         assert obj.name == "topic-two"
-        assert obj.slug == obj.name
+        assert obj.get_slug() == obj.name
         assert obj.description == ""
 
         obj_aliases = obj.aliases.all()
-        expected_aliases = {"topic-two"}
-        assert set(obj_aliases.values_list("text", flat=True)) == expected_aliases
-        assert obj_aliases[0].protected
+        assert obj_aliases.count() == 2
+
+        expected_aliases = {"topic-two", "second-topic"}
+        actual_aliases = set(obj_aliases.values_list("text", flat=True))
+        assert actual_aliases == expected_aliases
+
+        name_alias = obj_aliases.get(text="topic-two")
+        assert name_alias.protected
 
     @pytest.mark.parametrize(
         "new_name,new_slug",
@@ -46,7 +54,7 @@ class TestCreateAliasedModel:
             ("LawOther", "lawother"),
         ],
     )
-    def test_change_object_name(self, new_name, new_slug):
+    def test_change_topic_name(self, new_name, new_slug):
         # Act
         example = Topic.objects.create(
             name="Law&Øther", description="Law and other topics."
@@ -56,7 +64,7 @@ class TestCreateAliasedModel:
 
         # Assert
         assert example.name == new_name
-        assert example.slug == new_slug
+        assert example.get_slug() == new_slug
 
     def test_can_create_another_object_type_with_same_name(self):
         # Act
@@ -65,12 +73,12 @@ class TestCreateAliasedModel:
 
         # Assert
         assert topic.name == idea.name
-        assert topic.slug == idea.slug
-        assert set(topic.aliases.values_list("text", flat=True)) == set(
-            idea.aliases.values_list("text", flat=True)
-        )
+        assert topic.get_slug() == idea.get_slug()
+        topic_alias_set = set(topic.aliases.values_list("text", flat=True))
+        idea_alias_set = set(idea.aliases.values_list("text", flat=True))
+        assert topic_alias_set == idea_alias_set
 
-    def test_cannot_duplicate_names_or_aliases(self):
+    def test_cannot_duplicate_aliases(self):
         # Arrange
         topic = Topic.objects.create(name="Law&Other", description="About law.")
         topic.aliases.create(text="law-etc")
@@ -103,9 +111,15 @@ class TestValidateUniqueAlias:
         social = TopicAlias(text="Social Norms", owner=norms)
 
         # Act & assert
-        assert social.validate_unique() is None  # not yet saved
+        try:
+            social.full_clean()  # not yet saved
+        except ValidationError:
+            pytest.fail("ValidationError raised with unique aliases.")
         social.save()
-        assert social.validate_unique() is None
+        try:
+            social.full_clean()
+        except ValidationError:
+            pytest.fail("ValidationError raised with unique aliases.")
 
     def test_succeeds_when_another_object_type_has_same_alias(self):
         # Arrange
@@ -115,9 +129,15 @@ class TestValidateUniqueAlias:
         rules = IdeaAlias(text="Rules", owner=norms_idea)
 
         # Act & assert
-        assert rules.validate_unique() is None  # not yet saved
+        try:
+            rules.full_clean()  # not yet saved
+        except ValidationError:
+            pytest.fail("ValidationError raised with unique aliases.")
         rules.save()
-        assert rules.validate_unique() is None
+        try:
+            rules.full_clean()
+        except ValidationError:
+            pytest.fail("ValidationError raised with unique aliases.")
 
     @pytest.mark.parametrize("alias_text", ["Law", "law", "Rules", "rulEs"])
     def test_fails_with_duplicate_aliases(self, alias_text):
@@ -126,7 +146,7 @@ class TestValidateUniqueAlias:
         law.aliases.create(text="Rules")
         norms = Topic.objects.create(name="Norms", description="About norms.")
 
-        # Assert
+        # Act & Assert
         norms_alias = TopicAlias(text=alias_text, owner=norms)
         with pytest.raises(ValidationError):
-            norms_alias.validate_unique()
+            norms_alias.full_clean()

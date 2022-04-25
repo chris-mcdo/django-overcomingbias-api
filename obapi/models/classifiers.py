@@ -1,7 +1,4 @@
-from django.core.exceptions import ValidationError
-from django.db import IntegrityError, models, transaction
-from django.db.models import UniqueConstraint
-from django.db.models.functions import Lower
+from django.db import models, transaction
 from django.urls import reverse
 from obapi import utils
 
@@ -10,15 +7,15 @@ class AliasedModel(models.Model):
     """Base class for models with aliases."""
 
     name = models.CharField(max_length=100, unique=True, help_text="Name.")
-    slug = models.SlugField(
-        max_length=utils.SLUG_MAX_LENGTH, unique=True, null=True, editable=False
-    )
     description = models.CharField(
         max_length=100, help_text="Brief description.", blank=True
     )
 
     class Meta:
         abstract = True
+
+    def get_slug(self):
+        return self.aliases.get(protected=True).text
 
     def __str__(self):
         return self.name
@@ -31,29 +28,15 @@ class AliasedModel(models.Model):
         IntegrityError
             If the instance `name` is already an alias of another instance.
         """
-        try:
-            with transaction.atomic():
-                # (1) Update slug
-                self.slug = utils.to_slug(self.name)
-                # (2) Save model instance
-                super().save(*args, **kwargs)
-                # (3) un-protect all aliases
-                self.aliases.all().update(protected=False)
-                # (4) create and protect <instance name> alias
-                self.aliases.update_or_create(
-                    text__iexact=self.name,
-                    defaults={"text": self.name, "protected": True},
-                )
-                # (5) create and protect <slug> alias (if needed)
-                self.aliases.update_or_create(
-                    text__iexact=self.slug,
-                    defaults={"text": self.slug, "protected": True},
-                )
-        except IntegrityError as e:
-            raise IntegrityError(
-                f"The name {self.name}"
-                f" is an alias of another {self._meta.verbose_name}."
-            ) from e
+        with transaction.atomic():
+            # (1) Save model instance
+            super().save(*args, **kwargs)
+            # (2) Set and protect `name` alias
+            self.aliases.all().update(protected=False)
+            self.aliases.update_or_create(
+                text=utils.slugify(self.name),
+                defaults={"protected": True},
+            )
 
     def get_absolute_url(self):
         model_name = self._meta.verbose_name
@@ -86,7 +69,9 @@ class Alias(models.Model):
     `name` attribute, or the subclass should override the __str__ method.
     """
 
-    text = models.CharField(max_length=100, help_text="Alias text.")
+    text = models.SlugField(
+        max_length=utils.SLUG_MAX_LENGTH, help_text="Alias text.", unique=True
+    )
     protected = models.BooleanField(
         default=False,
         editable=False,
@@ -97,26 +82,17 @@ class Alias(models.Model):
     class Meta:
         abstract = True
         verbose_name_plural = "aliases"
-        constraints = [UniqueConstraint(Lower("text"), name="%(class)s_is_unique")]
 
     def __str__(self):
-        return f"{self.text} ({self.owner.name})"
+        return self.text
 
-    def validate_unique(self, exclude=None):
-        super().validate_unique(exclude=exclude)
-        if exclude is not None and "text" in exclude:
-            return
-        # Raise error if there is a matching alias, and the match has a different pk
-        try:
-            match = type(self).objects.get(text__iexact=self.text)
-        except type(self).DoesNotExist:
-            return
-        else:
-            if match != self:
-                self.owner.refresh_from_db(fields=["name"])
-                raise ValidationError(
-                    {"text": "This alias is already taken."}, code="invalid"
-                )
+    def clean(self):
+        self.text = utils.slugify(self.text)
+        super().clean()
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
 
 class AuthorAlias(Alias):

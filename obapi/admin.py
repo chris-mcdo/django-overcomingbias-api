@@ -9,13 +9,11 @@ from django.core.exceptions import (
 )
 from django.db import IntegrityError, transaction
 from django.db.models import Q
-from django.forms import BaseInlineFormSet, ValidationError
 from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils.translation import ngettext
 
-from obapi import utils
 from obapi.exceptions import APICallError
 from obapi.forms import (
     AddOBContentItemForm,
@@ -42,44 +40,8 @@ from obapi.models.classifiers import ExternalLink
 # https://docs.djangoproject.com/en/4.0/ref/contrib/admin/#inlinemodeladmin-objects
 
 
-class AliasInlineFormSet(BaseInlineFormSet):
-    """Inline which prevents duplicate aliases."""
-
-    def clean(self):
-        super().clean()
-
-        if self.forms == [] or not hasattr(self, "cleaned_data"):
-            return
-
-        name = self.data["name"]
-        (name_lower, slug) = (name.lower(), utils.to_slug(name))
-        aliases_lower = [
-            form["text"].data.lower() for form in self.forms if not form["DELETE"].data
-        ]
-
-        # Check aliases aren't the same as each other, or the author name / slug
-        for i, alias_lower in enumerate(aliases_lower):
-
-            # Alias is same as existing name / slug - not ok
-            if alias_lower in (name_lower, slug):
-                # Unless name is changed to existing alias
-                if not self.forms[i].has_changed():
-                    continue
-
-                if self.instance.pk is not None:
-                    self.instance.refresh_from_db(fields=["name"])
-                raise ValidationError("Aliases must differ from name.", code="invalid")
-
-            # Any duplication of aliases - not ok
-            if any(alias_lower == aliases_lower[k] for k in range(0, i)):
-                if self.instance.pk is not None:
-                    self.instance.refresh_from_db(fields=["name"])
-                raise ValidationError("Aliases must be unique.", code="invalid")
-
-
 class AliasInline(admin.TabularInline):
     extra = 0
-    formset = AliasInlineFormSet
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(protected=False)

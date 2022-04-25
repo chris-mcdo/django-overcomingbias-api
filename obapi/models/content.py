@@ -64,14 +64,12 @@ class ContentItemQuerySet(InheritanceQuerySet):
         if author_names is None:
             return None
         with transaction.atomic():
-            # Match by alias or slug
+            # Match by alias
             authors = [
-                Author.objects.filter(
-                    Q(alias__text__iexact=author_name)
-                    | Q(slug=utils.to_slug(author_name))
+                Author.objects.get_or_create(
+                    alias__text=utils.to_slug(author_name),
+                    defaults={"name": author_name},
                 )
-                .distinct()
-                .get_or_create(defaults={"name": author_name})
                 for author_name in author_names
             ]
             return [author[0] for author in authors]
@@ -85,10 +83,8 @@ class ContentItemQuerySet(InheritanceQuerySet):
         tags = []
         with transaction.atomic():
             for classifier_name in classifier_names:
-                # Match by alias or slug
-                query = Q(alias__text__iexact=classifier_name) | Q(
-                    slug=utils.to_slug(classifier_name)
-                )
+                # Match by alias
+                query = Q(alias__text=utils.to_slug(classifier_name))
                 try:
                     ideas.append(Idea.objects.get(query))
                     continue
@@ -103,9 +99,7 @@ class ContentItemQuerySet(InheritanceQuerySet):
                 # If that fails, try to get a tag with alias = classifier_name
                 # If no such tag exists, create a new one
                 tags.append(
-                    Tag.objects.filter(query)
-                    .distinct()
-                    .get_or_create(
+                    Tag.objects.filter(query).get_or_create(
                         defaults={"name": classifier_name},
                     )[0]
                 )
