@@ -17,7 +17,7 @@ class TestCreateAliasedModel:
         # Assert
         obj = Topic.objects.get(name="Law&Øther")
         assert obj.name == "Law&Øther"
-        assert obj.get_slug() == "law-other"
+        assert obj.slug == "law-other"
         assert obj.description == "Law and other topics."
 
         obj_aliases = obj.aliases.all()
@@ -35,7 +35,7 @@ class TestCreateAliasedModel:
         # Assert
         obj = Topic.objects.get(name="topic-two")
         assert obj.name == "topic-two"
-        assert obj.get_slug() == obj.name
+        assert obj.slug == obj.name
         assert obj.description == ""
 
         obj_aliases = obj.aliases.all()
@@ -67,7 +67,7 @@ class TestCreateAliasedModel:
 
         # Assert
         assert example.name == new_name
-        assert example.get_slug() == new_slug
+        assert example.slug == new_slug
 
     def test_can_create_another_object_type_with_same_name(self):
         # Act
@@ -76,7 +76,7 @@ class TestCreateAliasedModel:
 
         # Assert
         assert topic.name == idea.name
-        assert topic.get_slug() == idea.get_slug()
+        assert topic.slug == idea.slug
         topic_alias_set = set(topic.aliases.values_list("text", flat=True))
         idea_alias_set = set(idea.aliases.values_list("text", flat=True))
         assert topic_alias_set == idea_alias_set
@@ -120,7 +120,7 @@ class TestCreateWithAliases:
 
         # Assert
         assert t1.name == topic_name
-        assert t1.get_slug() == utils.slugify(topic_name)
+        assert t1.slug == utils.slugify(topic_name)
         assert t1.aliases.count() == alias_count
 
     @pytest.mark.parametrize(

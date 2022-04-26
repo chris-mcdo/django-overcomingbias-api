@@ -14,7 +14,7 @@ class AliasedModelQuerySet(models.QuerySet):
         aliases = set(aliases)
         with transaction.atomic():
             new_object = self.create(**kwargs)
-            aliases.discard(new_object.get_slug())
+            aliases.discard(new_object.slug)
             for alias in aliases:
                 new_object.aliases.create(text=alias)
         return new_object
@@ -65,6 +65,9 @@ class AliasedModel(models.Model):
     objects = AliasedModelQuerySet().as_manager()
 
     name = models.CharField(max_length=100, unique=True, help_text="Name.")
+    slug = SimpleSlugField(
+        max_length=utils.SLUG_MAX_LENGTH, unique=True, editable=False
+    )
     description = models.CharField(
         max_length=100, help_text="Brief description.", blank=True
     )
@@ -72,11 +75,13 @@ class AliasedModel(models.Model):
     class Meta:
         abstract = True
 
-    def get_slug(self):
-        return self.aliases.get(protected=True).text
-
     def __str__(self):
         return self.name
+
+    def clean(self):
+        # Set slug from title
+        self.slug = utils.to_slug(self.name)
+        super().clean()
 
     def save(self, *args, **kwargs):
         """Save an AliasedModel instance.
@@ -86,13 +91,15 @@ class AliasedModel(models.Model):
         IntegrityError
             If the instance `name` is already an alias of another instance.
         """
+        # (1) Clean and set slug
+        self.clean()
         with transaction.atomic():
-            # (1) Save model instance
+            # (2) Save model instance
             super().save(*args, **kwargs)
-            # (2) Set and protect `name` alias
+            # (3) Set and protect `slug` alias
             self.aliases.all().update(protected=False)
             self.aliases.update_or_create(
-                text=utils.slugify(self.name),
+                text=self.slug,
                 defaults={"protected": True},
             )
 
