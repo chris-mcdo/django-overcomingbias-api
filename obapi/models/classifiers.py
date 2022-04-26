@@ -5,8 +5,25 @@ from obapi import utils
 from obapi.modelfields import SimpleSlugField
 
 
+class AliasedModelManager(models.Manager):
+    def create_with_aliases(self, aliases=None, **kwargs):
+        """Save an object with some aliases.
+
+        Assumes that the given aliases have been cleaned.
+        """
+        aliases = set(aliases)
+        with transaction.atomic():
+            new_object = self.create(**kwargs)
+            aliases.discard(new_object.get_slug())
+            for alias in aliases:
+                new_object.aliases.create(text=alias)
+        return new_object
+
+
 class AliasedModel(models.Model):
     """Base class for models with aliases."""
+
+    objects = AliasedModelManager()
 
     name = models.CharField(max_length=100, unique=True, help_text="Name.")
     description = models.CharField(

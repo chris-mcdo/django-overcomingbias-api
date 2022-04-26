@@ -1,6 +1,7 @@
 import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from obapi import utils
 from obapi.models import Idea, Topic
 from obapi.models.classifiers import IdeaAlias, TopicAlias
 
@@ -99,6 +100,37 @@ class TestCreateAliasedModel:
         # Slug = existing alias
         with pytest.raises(IntegrityError):
             Topic.objects.create(name="Law, Etc.")
+
+
+@pytest.mark.django_db
+class TestCreateWithAliases:
+    @pytest.mark.parametrize(
+        "topic_name,aliases,alias_count",
+        [
+            ("Law Other", [], 1),
+            ("Law Other", ["law", "norms"], 3),
+            ("Law Other", ["law-other"], 1),
+        ],
+    )
+    def test_create_valid_topics(self, topic_name, aliases, alias_count):
+        # Act
+        t1 = Topic.objects.create_with_aliases(name=topic_name, aliases=aliases)
+
+        # Assert
+        assert t1.name == topic_name
+        assert t1.get_slug() == utils.slugify(topic_name)
+        assert t1.aliases.count() == alias_count
+
+    @pytest.mark.parametrize(
+        "topic_name,aliases", [("Law", ["legal"]), ("Legal", ["lawyer", "norms"])]
+    )
+    def test_fails_with_invalid_names(self, topic_name, aliases):
+        # Arrange
+        Topic.objects.create_with_aliases(name="Law", aliases=["law-etc", "norms"])
+
+        # Act & Assert
+        with pytest.raises(IntegrityError):
+            Topic.objects.create_with_aliases(name=topic_name, aliases=aliases)
 
 
 @pytest.mark.django_db
