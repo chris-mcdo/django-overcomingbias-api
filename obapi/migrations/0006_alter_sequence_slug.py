@@ -2,6 +2,15 @@
 
 import obapi.modelfields
 from django.db import migrations
+from obapi import utils
+
+
+def save_sequences(apps, schema_editor):
+    Sequence = apps.get_model("obapi", "sequence")
+    db_alias = schema_editor.connection.alias
+    for obj in Sequence.objects.using(db_alias).all():
+        obj.slug = utils.slugify(obj.name)
+        obj.save()
 
 
 class Migration(migrations.Migration):
@@ -18,5 +27,8 @@ class Migration(migrations.Migration):
                 default="default", editable=False, max_length=100
             ),
             preserve_default=False,
+        ),
+        migrations.RunPython(
+            code=save_sequences, reverse_code=migrations.RunPython.noop
         ),
     ]

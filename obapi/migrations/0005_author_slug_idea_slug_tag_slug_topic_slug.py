@@ -2,6 +2,16 @@
 
 import obapi.modelfields
 from django.db import migrations
+from obapi import utils
+
+
+def save_aliased_models(apps, schema_editor):
+    for model_name in ["author", "idea", "tag", "topic"]:
+        model = apps.get_model("obapi", model_name)
+        db_alias = schema_editor.connection.alias
+        for obj in model.objects.using(db_alias).all():
+            obj.slug = utils.slugify(obj.name)
+            obj.save()
 
 
 class Migration(migrations.Migration):
@@ -15,7 +25,7 @@ class Migration(migrations.Migration):
             model_name="author",
             name="slug",
             field=obapi.modelfields.SimpleSlugField(
-                default="default", editable=False, max_length=100, unique=True
+                default="default", editable=False, max_length=100
             ),
             preserve_default=False,
         ),
@@ -23,7 +33,7 @@ class Migration(migrations.Migration):
             model_name="idea",
             name="slug",
             field=obapi.modelfields.SimpleSlugField(
-                default="default", editable=False, max_length=100, unique=True
+                default="default", editable=False, max_length=100
             ),
             preserve_default=False,
         ),
@@ -31,7 +41,7 @@ class Migration(migrations.Migration):
             model_name="tag",
             name="slug",
             field=obapi.modelfields.SimpleSlugField(
-                default="default", editable=False, max_length=100, unique=True
+                default="default", editable=False, max_length=100
             ),
             preserve_default=False,
         ),
@@ -39,8 +49,39 @@ class Migration(migrations.Migration):
             model_name="topic",
             name="slug",
             field=obapi.modelfields.SimpleSlugField(
-                default="default", editable=False, max_length=100, unique=True
+                default="default", editable=False, max_length=100
             ),
             preserve_default=False,
+        ),
+        migrations.RunPython(
+            code=save_aliased_models, reverse_code=migrations.RunPython.noop
+        ),
+        migrations.AlterField(
+            model_name="author",
+            name="slug",
+            field=obapi.modelfields.SimpleSlugField(
+                editable=False, max_length=100, unique=True
+            ),
+        ),
+        migrations.AlterField(
+            model_name="idea",
+            name="slug",
+            field=obapi.modelfields.SimpleSlugField(
+                editable=False, max_length=100, unique=True
+            ),
+        ),
+        migrations.AlterField(
+            model_name="tag",
+            name="slug",
+            field=obapi.modelfields.SimpleSlugField(
+                editable=False, max_length=100, unique=True
+            ),
+        ),
+        migrations.AlterField(
+            model_name="topic",
+            name="slug",
+            field=obapi.modelfields.SimpleSlugField(
+                editable=False, max_length=100, unique=True
+            ),
         ),
     ]
