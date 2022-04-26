@@ -15,7 +15,7 @@ class BaseSequence(models.Model):
         related_name="%(class)ss",
     )
     title = models.CharField(max_length=100, help_text="Sequence title.")
-    slug = SimpleSlugField(max_length=utils.SLUG_MAX_LENGTH, null=True, editable=False)
+    slug = SimpleSlugField(max_length=utils.SLUG_MAX_LENGTH, editable=False)
     description = models.TextField(
         blank=True, max_length=5000, help_text="Description of sequence."
     )
