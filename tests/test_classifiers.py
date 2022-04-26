@@ -1,8 +1,10 @@
+import datetime
+
 import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from obapi import utils
-from obapi.models import Idea, Topic
+from obapi.models import Author, ContentItem, Idea, Topic
 from obapi.models.classifiers import IdeaAlias, TopicAlias
 
 
@@ -182,3 +184,106 @@ class TestValidateUniqueAlias:
         norms_alias = TopicAlias(text=alias_text, owner=norms)
         with pytest.raises(ValidationError):
             norms_alias.full_clean()
+
+
+@pytest.mark.django_db
+class TestMergeObjects:
+    def test_preserves_related_content(self):
+        # Arrange - create topics and related content
+        law = Topic.objects.create_with_aliases(name="Law", aliases=["legal", "laws"])
+        norms = Topic.objects.create_with_aliases(name="Norms", aliases=["norm"])
+
+        now = datetime.datetime.now()
+        video = ContentItem.objects.create(title="Video Item", publish_date=now)
+        audio = ContentItem.objects.create(title="Audio Item", publish_date=now)
+        text = ContentItem.objects.create(title="Text Item", publish_date=now)
+
+        law.content.add(video, audio)
+        norms.content.add(text)
+
+        # Act
+        merged_object = Topic.objects.all().merge_objects()
+
+        # Assert
+        assert not Topic.objects.filter(pk__in=[law.pk, norms.pk])
+
+        expected_content = {video, audio, text}
+        assert set(merged_object.content.all()) == expected_content
+
+        expected_names = ("Law", "Norms")
+        assert merged_object.name in expected_names
+
+        expected_aliases = {"law", "legal", "laws", "norms", "norm"}
+        actual_aliases = set(merged_object.aliases.values_list("text", flat=True))
+        assert actual_aliases == expected_aliases
+
+
+@pytest.mark.django_db
+class TestConvertObject:
+    def test_preserves_related_content(self):
+        # Arrange - create topic and related content
+        law_topic = Topic.objects.create_with_aliases(
+            name="Law", description="A short description", aliases=["legal", "laws"]
+        )
+
+        now = datetime.datetime.now()
+        video = ContentItem.objects.create(title="Video Item", publish_date=now)
+        audio = ContentItem.objects.create(title="Audio Item", publish_date=now)
+        text = ContentItem.objects.create(title="Text Item", publish_date=now)
+
+        law_topic.content.add(video, audio, text)
+
+        # Act
+        converted_object = law_topic.convert_object(Idea)
+
+        # Assert
+        with pytest.raises(Topic.DoesNotExist):
+            law_topic.refresh_from_db()
+
+        expected_content = {video, audio, text}
+        assert set(converted_object.content.all()) == expected_content
+
+        assert converted_object.name == "Law"
+        assert converted_object.description == "A short description"
+
+        expected_aliases = {"law", "legal", "laws"}
+        actual_aliases = set(converted_object.aliases.values_list("text", flat=True))
+        assert actual_aliases == expected_aliases
+
+    def test_can_convert_topic_to_author(self):
+        # Arrange
+        example_topic = Topic.objects.create_with_aliases(
+            name="Example", description="A short description", aliases=["test"]
+        )
+
+        # Act
+        converted_object = example_topic.convert_object(Author)
+
+        # Assert
+        with pytest.raises(Topic.DoesNotExist):
+            example_topic.refresh_from_db()
+
+        assert converted_object.name == "Example"
+        assert converted_object.description is None
+
+        expected_aliases = {"example", "test"}
+        actual_aliases = set(converted_object.aliases.values_list("text", flat=True))
+        assert actual_aliases == expected_aliases
+
+    @pytest.mark.parametrize(
+        "topic_name,aliases",
+        [("Law", []), ("law", []), ("Norms", ["law"]), ("Norms", ["legal"])],
+    )
+    def test_fails_when_alias_already_exists(self, topic_name, aliases):
+        # Arrange
+        Idea.objects.create_with_aliases(name="Law", aliases=["legal", "laws"])
+        law_topic = Topic.objects.create_with_aliases(name=topic_name, aliases=aliases)
+
+        # Act & Assert
+        with pytest.raises(IntegrityError):
+            law_topic.convert_object(Idea)
+
+        try:
+            Topic.objects.get(pk=law_topic.pk)
+        except Topic.DoesNotExist:
+            pytest.fail("Topic was deleted during failed conversion.")

@@ -2,13 +2,8 @@ from django.contrib import admin, messages
 from django.contrib.admin.helpers import Fieldset
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.admin.utils import model_ngettext
-from django.core.exceptions import (
-    FieldDoesNotExist,
-    PermissionDenied,
-    SuspiciousOperation,
-)
-from django.db import IntegrityError, transaction
-from django.db.models import Q
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.db import IntegrityError
 from django.forms import BaseInlineFormSet
 from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
@@ -99,7 +94,7 @@ class ContentItemInline(admin.StackedInline):
 @admin.action(description="Merge objects", permissions=["change"])
 def merge_aliased_objects(modeladmin, request, queryset):
     """Merge multiple objects and their aliases."""
-    if queryset.count() < 2:
+    if (object_count := queryset.count()) < 2:
         modeladmin.message_user(
             request,
             "Two or more items must be selected to merge. No items have been changed.",
@@ -107,62 +102,13 @@ def merge_aliased_objects(modeladmin, request, queryset):
         )
         return
 
-    aliased_model = queryset.model
-    new_fields = {}
-
-    # Make list of aliases
-    aliases = []
-    for obj in queryset:
-        aliases.extend(obj.aliases.values_list("text", flat=True))
-    new_fields["name"] = aliases.pop(0)
-
-    # Create new description (if description field exists)
-    try:
-        max_length = aliased_model._meta.get_field("description").max_length
-        description_list = queryset.values_list("description", flat=True)
-        description = "/".join([desc for desc in description_list if desc != ""])
-        new_fields["description"] = description[0:max_length]
-    except FieldDoesNotExist:
-        pass
-
-    # Delete old objects and create new one (and its aliases)
-    with transaction.atomic():
-        queryset.delete()
-        new_object = aliased_model.objects.create(**new_fields)
-        for alias in aliases:
-            new_object.aliases.create(text=alias)
+    new_object = queryset.merge_objects()
 
     modeladmin.message_user(
         request,
-        f"{len(aliases) + 1} aliases merged into {new_object.name}.",
+        f"{object_count} objects merged into {new_object.name}.",
         messages.SUCCESS,
     )
-
-
-def convert_aliased_object(obj, model):
-    """Convert an aliased object to another type."""
-    with transaction.atomic():
-        # Ensure uniqueness of aliases
-        aliases = list(obj.aliases.values_list("text", flat=True))
-        q_list = Q()
-        for q in [Q(alias__text__iexact=alias) for alias in aliases]:
-            q_list |= q
-        if model.objects.filter(q_list).exists():
-            raise IntegrityError
-
-        # Create new object
-        new_object = model.objects.create(name=obj.name)
-        aliases.remove(new_object.name)
-        for alias in aliases:
-            new_object.aliases.create(text=alias)
-
-        # Update related content
-        items = obj.content.all()
-        new_object.content.add(*items)
-
-        # Delete old object
-        obj.delete()
-        del obj
 
 
 def convert_aliased_objects(modeladmin, request, queryset, model):
@@ -172,7 +118,7 @@ def convert_aliased_objects(modeladmin, request, queryset, model):
     # Attempt to convert each object in the queryset
     for obj in queryset:
         try:
-            convert_aliased_object(obj, model)
+            obj.convert_object(model)
             success_count = success_count + 1
         except IntegrityError:
             err_count = err_count + 1
