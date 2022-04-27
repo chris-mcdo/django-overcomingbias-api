@@ -5,8 +5,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from obapi import utils
-from obapi.models import (AudioContentItem, Sequence, TextContentItem,
-                          VideoContentItem)
+from obapi.models import AudioContentItem, Sequence, TextContentItem, VideoContentItem
 
 
 @pytest.fixture
