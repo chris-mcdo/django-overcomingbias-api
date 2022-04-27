@@ -13,7 +13,7 @@ from obapi import exceptions
 def download_youtube_videos_json(video_ids):
     api_url = "https://youtube.googleapis.com/youtube/v3/videos"
     payload = {
-        "id": video_ids,
+        "id": ",".join(video_ids),
         "part": ("snippet", "contentDetails", "statistics"),
         "key": settings.YOUTUBE_API_KEY,
     }
@@ -25,7 +25,7 @@ def download_youtube_videos_json(video_ids):
 def download_spotify_episodes_json(episode_ids):
     api_url = "https://api.spotify.com/v1/episodes/"
     headers = {"Authorization": f"Bearer {_get_spotify_api_token()}"}
-    params = {"ids": episode_ids, "market": "US"}
+    params = {"ids": ",".join(episode_ids), "market": "US"}
     response = httpx.get(url=api_url, headers=headers, params=params)
     _raise_for_status(response)
     return response.json()
