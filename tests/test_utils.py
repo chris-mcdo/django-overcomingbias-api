@@ -1,5 +1,5 @@
 import pytest
-from obapi.utils import parse_duration
+from obapi.utils import parse_duration, plaintext_to_html
 
 
 class TestParseDuration:
