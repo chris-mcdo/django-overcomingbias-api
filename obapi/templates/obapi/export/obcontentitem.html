@@ -1,0 +1,7 @@
+{% extends "./base.html" %}
+
+{% block content %}
+    {% autoescape off %}
+        {{ item.text_html }}
+    {% endautoescape %}
+{% endblock %}

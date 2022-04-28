@@ -1,0 +1,10 @@
+{% extends "./base.html" %}
+
+{% block content %}
+    <h2>Episode</h2>
+    {% with content_url=item.content_url %}
+        <p>Listen to the full episode at <a href="{{ content_url }}">{{ content_url }}</a></p>
+    {% endwith %}
+    <h2>Episode Description</h2>
+    {{ block.super }}
+{% endblock %}

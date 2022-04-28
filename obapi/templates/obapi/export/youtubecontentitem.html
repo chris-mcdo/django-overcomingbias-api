@@ -1,0 +1,10 @@
+{% extends "./base.html" %}
+
+{% block content %}
+    <h2>Video</h2>
+    {% with content_url=item.content_url %}
+        <p>Watch the full video at <a href="{{ content_url }}">{{ content_url }}</a></p>
+    {% endwith %}
+    <h2>Video Description</h2>
+    {{ block.super }}
+{% endblock %}

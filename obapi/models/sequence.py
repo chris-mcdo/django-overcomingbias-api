@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.template.loader import render_to_string
 from obapi import utils
 from obapi.modelfields import SimpleSlugField
 from ordered_model.models import OrderedModel
@@ -44,6 +45,24 @@ class BaseSequence(models.Model):
         """Save a Sequence object."""
         self.clean()
         super().save(*args, **kwargs)
+
+    def export(self, output_format="md", output_file=None):
+        import pypandoc
+
+        if output_file is None:
+            output_file = f"output/sequence-{self.pk}.{output_format}"
+
+        metadata_template = f"{self._meta.app_label}/export/metadata.md"
+        metadata = render_to_string(metadata_template, {"sequence": self})
+
+        items = self.items.select_subclasses()
+        markdown_items = [item.export(output_format="md") for item in items]
+
+        markdown_full_text = "\n".join([metadata] + markdown_items)
+
+        pypandoc.convert_text(
+            markdown_full_text, to=output_format, format="md", outputfile=output_file
+        )
 
 
 class BaseSequenceMember(OrderedModel):

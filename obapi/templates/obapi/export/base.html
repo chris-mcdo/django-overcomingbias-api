@@ -1,0 +1,49 @@
+{% comment %} Header {% endcomment %}
+<header>
+    {% block title %}
+        <h1>{{ item.title }}</h1>
+    {% endblock %}
+    {% block authors %}
+        <p>
+            By
+            {% for author in item.authors.all %}
+                {{ author.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+    {% endblock %}
+    {% block site %}
+        <p>On {{ item.site_name }}</p>
+    {% endblock %}
+    {% block date %}
+        <p>{{ item.publish_date|date:"F jS, Y" }}</p>
+    {% endblock date %}
+</header>
+
+{% comment %} Body {% endcomment %}
+<body>
+    {% block content %}
+        {% autoescape off %}
+            {{ item.description_html }}
+        {% endautoescape %}
+    {% endblock %}
+</body>
+
+{% comment %} Footer {% endcomment %}
+<footer>
+    {% block tags %}
+        <p>Ideas:
+            {% for idea in item.ideas.all %}
+                {{ idea.name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                <i>None</i>
+            {% endfor %}
+        </p>
+        <p>Topics:
+            {% for topic in item.topics.all %}
+                {{ topic.name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                <i>None</i>
+            {% endfor %}
+        </p>
+    {% endblock %}
+</footer>
