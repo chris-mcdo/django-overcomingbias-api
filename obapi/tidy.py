@@ -117,7 +117,7 @@ def _tidy_ob_post_html(text_html: str):
     # Replace multiple spaces?
     # re.sub(" {2,}", " ", text)
 
-    soup = bs4.BeautifulSoup(text)
+    soup = bs4.BeautifulSoup(text, "lxml")
 
     # Unwrap unwanted tags
     TAGS_TO_UNWRAP = ("nobr", "span")
