@@ -1,6 +1,7 @@
 import datetime
 import re
 
+import bs4
 from dateutil.parser import isoparse
 
 from obapi import utils
@@ -89,7 +90,7 @@ def _tidy_ob_post_object(item_post):
         "publish_date": item_post.publish_date,
         "edit_date": item_post.edit_date,
         "word_count": item_post.word_count,
-        "text_html": item_post.text_html,
+        "text_html": _tidy_ob_post_html(item_post.text_html),
         "text_plain": item_post.plaintext,
         "item_id": item_post.name,
         "ob_post_number": item_post.number,
@@ -107,3 +108,76 @@ def _tidy_ob_internal_link(url: str):
     url = re.sub(r"-+", "-", url)  # collapse duplicate hyphens
     url = re.sub(r"-\.html", ".htm", url)  # remove trailing hyphens
     return url
+
+
+def _tidy_ob_post_html(text_html: str):
+    # Replace nbsp
+    text = text_html.replace("\xa0", " ")
+
+    # Replace multiple spaces?
+    # re.sub(" {2,}", " ", text)
+
+    soup = bs4.BeautifulSoup(text)
+
+    # Unwrap unwanted tags
+    TAGS_TO_UNWRAP = ("nobr", "span")
+    for tag in soup.find_all(TAGS_TO_UNWRAP):
+        tag.unwrap()
+
+    def replace_tag(soup, filter, replacement, clear_attributes=False):
+        """Replace all tags matching a filter."""
+        for tag in soup.find_all(filter):
+            tag.name = replacement
+            if clear_attributes:
+                tag.attrs = {}
+
+    # Replace data-list items
+    replace_tag(soup, ["dt", "dd"], "p", clear_attributes=True)
+    replace_tag(soup, "dl", "blockquote", clear_attributes=True)
+
+    # Apply single block-quotes
+    def is_single_blockquote(tag):
+        if tag.name not in ["p", "div"]:
+            return False
+
+        if class_ := tag.attrs.get("class"):
+            if "blockquote" in class_:
+                return True
+
+        bq_styles = ["margin-left: 40px", "padding-left: 30px", "padding-left: 40px"]
+        if style := tag.attrs.get("style"):
+            if any(bq_style in style for bq_style in bq_styles):
+                return True
+
+        return False
+
+    for tag in soup.find_all(is_single_blockquote):
+        tag.wrap(soup.new_tag("blockquote"))
+        tag.name = "p"
+        tag.attrs = {}
+
+    # Double blockquotes
+    def is_double_blockquote(tag):
+        if tag.name != "p":
+            return False
+
+        bq_styles = ["padding-left: 60px;"]
+        if style := tag.attrs.get("style"):
+            if any(bq_style in style for bq_style in bq_styles):
+                return True
+
+        return False
+
+    for tag in soup.find_all(is_double_blockquote):
+        tag.wrap(soup.new_tag("blockquote"))
+        tag.wrap(soup.new_tag("blockquote"))
+        tag.name = "p"
+        tag.attrs = {}
+
+    # Remove class attributes
+    for tag in soup.find_all(class_="MsoNormal"):
+        del tag["class"]
+
+    # Extract original fragment
+    html_fragment = str(soup.find(class_="entry-content"))
+    return html_fragment
