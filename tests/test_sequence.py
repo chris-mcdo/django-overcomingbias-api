@@ -24,7 +24,7 @@ class TestCreateSequence:
         # Arrange
         seq_title = "Empty Sequence"
         # Act
-        james.sequences.create(title=seq_title, description="Description")
+        james.sequences.create(title=seq_title, abstract="Description")
         # Assert
         seq = james.sequences.get(title=seq_title)
         assert seq.slug == utils.slugify(seq_title)

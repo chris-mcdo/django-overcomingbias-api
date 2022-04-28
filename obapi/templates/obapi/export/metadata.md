@@ -2,8 +2,8 @@
 ---
 title:  {{ sequence.title }}
 author: {{ sequence.owner.username }}
-{% if sequence.description %}abstract: |
-    {{ sequence.description }}
+{% if sequence.abstract %}abstract: |
+    {{ sequence.abstract }}
 {% endif %}
 lang: en
 dir: ltr
