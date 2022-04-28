@@ -26,11 +26,11 @@ def parse_duration(duration):
 
 
 def plaintext_to_html(text):
-    # Convert line breaks to <br> elements
-    broken_text = text.replace("\n", "<br>")
-
-    # Linkify URLs and email addresses
-    return bleach.linkify(broken_text, parse_email=True)
+    """Clean and format plaintext, outputting HTML."""
+    clean_text = bleach.clean(text)
+    html_text = f"<pre>{clean_text}</pre>"
+    linkified_text = bleach.linkify(html_text, parse_email=True)
+    return linkified_text
 
 
 def to_slug(text):

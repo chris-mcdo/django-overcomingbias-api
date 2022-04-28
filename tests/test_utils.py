@@ -13,3 +13,24 @@ class TestParseDuration:
 
         with pytest.raises(ValueError):
             parse_duration("PT3.827M")
+
+
+class TestPlaintextToHTML:
+    def test_removes_malicious_text(self):
+        # Arrange
+        malicious_text = "A text with an evil <script></script>"
+        # Act
+        html_text = plaintext_to_html(malicious_text)
+        # Assert
+        assert "<script>" not in html_text
+
+    def test_linkifies_urls(self):
+        text_with_url = "A www.example.com URL"
+        html_text = plaintext_to_html(text_with_url)
+        assert "</a>" in html_text
+
+    def test_wraps_with_pre_tag(self):
+        text = "Some sample text to be wrapped with pre tags"
+        html_text = plaintext_to_html(text)
+        assert html_text.startswith("<pre>")
+        assert html_text.endswith("</pre>")
