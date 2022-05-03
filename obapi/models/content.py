@@ -332,17 +332,16 @@ class ContentItem(models.Model):
             f"{opts.app_label}/export/{opts.model_name}.{self.pandoc_template_format}"
         )
 
-    def export(self, output_format="md"):
+    def export(self, output_format="markdown"):
         """Export an item using pandoc."""
         # (1) Render object in template
         export_template = self.get_export_template()
-        output_string = render_to_string(export_template, {"item": self})
+        input_text = render_to_string(export_template, {"item": self})
         # (2) Convert via pandoc
-        import pypandoc
+        options = ["-f", self.pandoc_template_format, "-t", output_format]
+        import pandadoc
 
-        return pypandoc.convert_text(
-            output_string, to=output_format, format=self.pandoc_template_format
-        )
+        return pandadoc.call_pandoc(options=options, input_text=input_text)
 
 
 class VideoContentItem(ContentItem):

@@ -46,8 +46,8 @@ class BaseSequence(models.Model):
         self.clean()
         super().save(*args, **kwargs)
 
-    def export(self, output_format="md", output_file=None):
-        import pypandoc
+    def export(self, output_format="markdown", output_file=None):
+        import pandadoc
 
         if output_file is None:
             output_file = f"output/sequence-{self.pk}.{output_format}"
@@ -56,13 +56,12 @@ class BaseSequence(models.Model):
         metadata = render_to_string(metadata_template, {"sequence": self})
 
         items = self.items.select_subclasses()
-        markdown_items = [item.export(output_format="md") for item in items]
+        markdown_items = [item.export(output_format="markdown") for item in items]
 
-        markdown_full_text = "\n".join([metadata] + markdown_items)
+        input_text = "\n".join([metadata] + markdown_items)
 
-        pypandoc.convert_text(
-            markdown_full_text, to=output_format, format="md", outputfile=output_file
-        )
+        options = ["-f", "markdown", "-t", output_format, "-o", output_file]
+        pandadoc.call_pandoc(options=options, input_text=input_text)
 
 
 class BaseSequenceMember(OrderedModel):
