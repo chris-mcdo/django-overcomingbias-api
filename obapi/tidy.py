@@ -178,6 +178,6 @@ def _tidy_ob_post_html(text_html: str):
     for tag in soup.find_all(class_="MsoNormal"):
         del tag["class"]
 
-    # Extract original fragment
-    html_fragment = str(soup.find(class_="entry-content"))
+    # Extract fragment within entry-content div
+    html_fragment = soup.find(class_="entry-content").decode_contents()
     return html_fragment

@@ -86,7 +86,7 @@ class TestTidyOBPostHTML:
         """Wrap a string in HTML tags, to make it look like a post."""
 
         def _wrap(body):
-            return f'<div class="entry-content">\n{body}\n</div>'
+            return f'<div class="entry-content">{body}</div>'
 
         return _wrap
 
@@ -107,7 +107,7 @@ class TestTidyOBPostHTML:
         ],
     )
     def test_replaces_nbsp(self, wrap, original, expected):
-        assert _tidy_ob_post_html(wrap(original)) == wrap(expected)
+        assert _tidy_ob_post_html(wrap(original)) == expected
 
     @pytest.mark.parametrize(
         "original,expected",
@@ -156,7 +156,7 @@ class TestTidyOBPostHTML:
         ],
     )
     def test_converts_single_blockquotes(self, wrap, original, expected):
-        assert _tidy_ob_post_html(wrap(original)) == wrap(expected)
+        assert _tidy_ob_post_html(wrap(original)) == expected
 
     @pytest.mark.parametrize(
         "original,expected",
@@ -168,19 +168,19 @@ class TestTidyOBPostHTML:
         ],
     )
     def test_converts_double_blockquotes(self, wrap, original, expected):
-        assert _tidy_ob_post_html(wrap(original)) == wrap(expected)
+        assert _tidy_ob_post_html(wrap(original)) == expected
 
     def test_unwraps_apple_space(self, wrap):
         original = '<p>Example.<span class="Apple-converted-space"> </span></p>'
         expected = "<p>Example. </p>"
-        assert _tidy_ob_post_html(wrap(original)) == wrap(expected)
+        assert _tidy_ob_post_html(wrap(original)) == expected
 
     def test_removes_msonormal_attributes(self, wrap):
         original = '<p class="MsoNormal">Example</p>'
         expected = "<p>Example</p>"
-        assert _tidy_ob_post_html(wrap(original)) == wrap(expected)
+        assert _tidy_ob_post_html(wrap(original)) == expected
 
     def test_removes_nobr_tags(self, wrap):
         original = "<p>Example<nobr></nobr><strong><nobr></nobr> </strong></p>"
         expected = "<p>Example<strong> </strong></p>"
-        assert _tidy_ob_post_html(wrap(original)) == wrap(expected)
+        assert _tidy_ob_post_html(wrap(original)) == expected
