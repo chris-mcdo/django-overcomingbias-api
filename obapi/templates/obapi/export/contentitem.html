@@ -13,7 +13,7 @@
             </p>
         {% endblock %}
         {% block site %}
-            <p>On {{ item.site_name }}</p>
+            {% if item.site_name %}<p>On {{ item.site_name }}</p>{% endif %}
         {% endblock %}
         {% block date %}
             <p>{{ item.publish_date|date:"F jS, Y" }}</p>
