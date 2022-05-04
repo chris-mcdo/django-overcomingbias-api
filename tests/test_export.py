@@ -42,6 +42,8 @@ class TestExport:
         # Act
         export_sequence(simple_sequence, md_writer)
 
+    @pytest.mark.require_youtube_api_key
+    @pytest.mark.require_spotify_api_key
     def test_export_random_sequence(
         self,
         alice,
