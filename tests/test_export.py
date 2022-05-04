@@ -1,10 +1,8 @@
 import datetime
-from pathlib import Path
 
 import pytest
 from django.contrib.auth.models import User
-from obapi.export import (EPUBPandocWriter, MarkdownPandocWriter,
-                          export_sequence)
+from obapi.export import EPUBPandocWriter, MarkdownPandocWriter, export_sequence
 from obapi.models import ContentItem
 
 
@@ -34,11 +32,11 @@ def simple_sequence(alice):
 
 @pytest.mark.django_db
 class TestExport:
-    def test_export_simple_sequence_to_markdown(self, simple_sequence):
+    def test_export_simple_sequence_to_markdown(self, simple_sequence, tmp_path):
         # Arrange
         md_writer = MarkdownPandocWriter()
         md_writer.set_output_file(
-            path_without_extension=Path("output", "test_sequence_simple")
+            path_without_extension=tmp_path / "test_sequence_simple"
         )
 
         # Act
@@ -50,6 +48,7 @@ class TestExport:
         random_obcontentitems,
         random_youtubecontentitems,
         random_spotifycontentitems,
+        tmp_path,
     ):
         # Arrange
         content = [
@@ -63,13 +62,13 @@ class TestExport:
 
         epub_writer = EPUBPandocWriter()
         epub_writer.set_output_file(
-            path_without_extension=Path("output", "test_sequence_random")
+            path_without_extension=tmp_path / "test_sequence_random"
         )
 
         # Act
         export_sequence(random_sequence, epub_writer)
 
-    def test_export_obcontent_sequence(self, alice, random_obcontentitems):
+    def test_export_obcontent_sequence(self, alice, random_obcontentitems, tmp_path):
         content = random_obcontentitems(10)
 
         obcontent_seq = alice.sequences.create(title="OB Sequence")
@@ -77,7 +76,7 @@ class TestExport:
 
         epub_writer = EPUBPandocWriter()
         epub_writer.set_output_file(
-            path_without_extension=Path("output", "test_sequence_ob")
+            path_without_extension=tmp_path / "test_sequence_ob"
         )
 
         # Act
