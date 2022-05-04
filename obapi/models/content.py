@@ -1,6 +1,5 @@
 from django.db import models, transaction
 from django.db.models import F, Q
-from django.template.loader import render_to_string
 from django.urls import reverse
 from model_utils.managers import InheritanceQuerySet
 from obapi import utils
@@ -323,25 +322,6 @@ class ContentItem(models.Model):
                 with transaction.atomic():
                     self.external_links.remove(pk)
                     self.internal_links.add(match)
-
-    pandoc_template_format = "html"  # format of export template
-
-    def get_export_template(self):
-        opts = self._meta
-        return (
-            f"{opts.app_label}/export/{opts.model_name}.{self.pandoc_template_format}"
-        )
-
-    def export(self, output_format="markdown"):
-        """Export an item using pandoc."""
-        # (1) Render object in template
-        export_template = self.get_export_template()
-        input_text = render_to_string(export_template, {"item": self})
-        # (2) Convert via pandoc
-        options = ["-f", self.pandoc_template_format, "-t", output_format]
-        import pandadoc
-
-        return pandadoc.call_pandoc(options=options, input_text=input_text)
 
 
 class VideoContentItem(ContentItem):
