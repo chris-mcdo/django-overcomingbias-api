@@ -9,6 +9,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils.translation import ngettext
+from ordered_model.admin import OrderedInlineModelAdminMixin, OrderedTabularInline
 
 from obapi import utils
 from obapi.exceptions import APICallError
@@ -24,6 +25,8 @@ from obapi.models import (
     Idea,
     IdeaAlias,
     OBContentItem,
+    Sequence,
+    SequenceMember,
     SpotifyContentItem,
     Tag,
     TagAlias,
@@ -433,3 +436,26 @@ class OBContentItemAdmin(ContentItemAdminTemplate):
         else:
             post_url = reverse("admin:index", current_app=self.admin_site.name)
         return HttpResponseRedirect(post_url)
+
+
+class SequenceMemberInline(OrderedTabularInline):
+    model = SequenceMember
+    fields = (
+        "content_item",
+        "order",
+        "move_up_down_links",
+    )
+    readonly_fields = (
+        "order",
+        "move_up_down_links",
+    )
+    ordering = ("order",)
+    extra = 1
+    autocomplete_fields = ("content_item",)
+
+
+@admin.register(Sequence)
+class SequenceAdmin(OrderedInlineModelAdminMixin, admin.ModelAdmin):
+    model = Sequence
+    list_display = ("title",)
+    inlines = (SequenceMemberInline,)
