@@ -305,3 +305,19 @@ class TestConvertObject:
             Topic.objects.get(pk=law_topic.pk)
         except Topic.DoesNotExist:
             pytest.fail("Topic was deleted during failed conversion.")
+
+    def test_can_convert_object_without_description(self):
+        law_tag = Tag.objects.create_with_aliases(name="Law", aliases=["legal", "laws"])
+
+        converted_object = law_tag.convert_object(Idea)
+
+        # Assert
+        with pytest.raises(Tag.DoesNotExist):
+            law_tag.refresh_from_db()
+
+        assert converted_object.name == "Law"
+        assert converted_object.description == ""
+
+        expected_aliases = {"law", "legal", "laws"}
+        actual_aliases = set(converted_object.aliases.values_list("text", flat=True))
+        assert actual_aliases == expected_aliases

@@ -137,7 +137,10 @@ class AliasedModel(models.Model):
                 "aliases": self.aliases.values_list("text", flat=True),
             }
             if model.description:
-                new_fields["description"] = self.description
+                if (old_description := self.description) is None:
+                    new_fields["description"] = ""
+                else:
+                    new_fields["description"] = old_description
 
             # Create new object
             new_object = model.objects.create_with_aliases(**new_fields)
