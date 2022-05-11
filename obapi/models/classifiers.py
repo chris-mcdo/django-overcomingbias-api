@@ -1,4 +1,4 @@
-from django.core.exceptions import FieldDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.urls import reverse
 from obapi import utils
@@ -34,11 +34,12 @@ class AliasedModelQuerySet(models.QuerySet):
         # Create new description (if description field exists)
         try:
             max_length = self.model.description.field.max_length
+        except AttributeError:
+            pass
+        else:
             description_list = self.values_list("description", flat=True)
             description = "/".join([desc for desc in description_list if desc != ""])
             new_fields["description"] = description[0:max_length]
-        except FieldDoesNotExist:
-            pass
 
         with transaction.atomic():
             # Collect related content

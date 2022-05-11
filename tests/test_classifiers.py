@@ -4,7 +4,7 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from obapi import utils
-from obapi.models import Author, ContentItem, Idea, Topic
+from obapi.models import Author, ContentItem, Idea, Tag, Topic
 from obapi.models.classifiers import IdeaAlias, TopicAlias
 
 
@@ -209,6 +209,24 @@ class TestMergeObjects:
 
         expected_content = {video, audio, text}
         assert set(merged_object.content.all()) == expected_content
+
+        expected_names = ("Law", "Norms")
+        assert merged_object.name in expected_names
+
+        expected_aliases = {"law", "legal", "laws", "norms", "norm"}
+        actual_aliases = set(merged_object.aliases.values_list("text", flat=True))
+        assert actual_aliases == expected_aliases
+
+    def test_can_merge_objects_without_descriptions(self):
+        # Arrange
+        law = Tag.objects.create_with_aliases(name="Law", aliases=["legal", "laws"])
+        norms = Tag.objects.create_with_aliases(name="Norms", aliases=["norm"])
+
+        # Act
+        merged_object = Tag.objects.all().merge_objects()
+
+        # Assert
+        assert not Tag.objects.filter(pk__in=[law.pk, norms.pk])
 
         expected_names = ("Law", "Norms")
         assert merged_object.name in expected_names
