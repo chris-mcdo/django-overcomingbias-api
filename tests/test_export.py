@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 from obapi.export import EPUBPandocWriter, MarkdownPandocWriter, export_sequence
 from obapi.models import ContentItem
 
+from markers import require_spotify_api_auth, require_youtube_api_key
+
 
 @pytest.fixture
 def alice():
@@ -13,7 +15,7 @@ def alice():
 
 @pytest.fixture
 def simple_sequence(alice):
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
     item_1 = ContentItem.objects.create(
         title="Item 1",
         description_html="<p>Item 1</p><p>Has 2 paragraphs</p>",
@@ -42,8 +44,8 @@ class TestExport:
         # Act
         export_sequence(simple_sequence, md_writer)
 
-    @pytest.mark.require_youtube_api_key
-    @pytest.mark.require_spotify_api_key
+    @require_youtube_api_key
+    @require_spotify_api_auth
     def test_export_random_sequence(
         self,
         alice,
