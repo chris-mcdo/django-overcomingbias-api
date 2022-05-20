@@ -188,7 +188,7 @@ class TestValidateUniqueAlias:
 
 @pytest.mark.django_db
 class TestMergeObjects:
-    def test_preserves_related_content(self):
+    def test_preserves_related_content_for_topics(self):
         # Arrange - create topics and related content
         law = Topic.objects.create_with_aliases(name="Law", aliases=["legal", "laws"])
         norms = Topic.objects.create_with_aliases(name="Norms", aliases=["norm"])
@@ -232,6 +232,35 @@ class TestMergeObjects:
         assert merged_object.name in expected_names
 
         expected_aliases = {"law", "legal", "laws", "norms", "norm"}
+        actual_aliases = set(merged_object.aliases.values_list("text", flat=True))
+        assert actual_aliases == expected_aliases
+
+    def test_preserves_related_content_for_authors(self):
+        # Arrange - create topics and related content
+        jane = Author.objects.create_with_aliases(name="Jane", aliases=["janet", "jan"])
+        norms = Author.objects.create_with_aliases(name="Oscar", aliases=["osc"])
+
+        now = datetime.datetime.now()
+        video = ContentItem.objects.create(title="Video Item", publish_date=now)
+        audio = ContentItem.objects.create(title="Audio Item", publish_date=now)
+        text = ContentItem.objects.create(title="Text Item", publish_date=now)
+
+        jane.content.add(video, audio)
+        norms.content.add(text)
+
+        # Act
+        merged_object = Author.objects.all().merge_objects()
+
+        # Assert
+        assert not Author.objects.filter(pk__in=[jane.pk, norms.pk])
+
+        expected_content = {video, audio, text}
+        assert set(merged_object.content.all()) == expected_content
+
+        expected_names = ("Jane", "Oscar")
+        assert merged_object.name in expected_names
+
+        expected_aliases = {"jane", "janet", "jan", "oscar", "osc"}
         actual_aliases = set(merged_object.aliases.values_list("text", flat=True))
         assert actual_aliases == expected_aliases
 
