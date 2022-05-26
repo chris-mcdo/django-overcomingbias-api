@@ -4,6 +4,8 @@ from django.urls import reverse
 from obapi import utils
 from obapi.modelfields import SimpleSlugField
 
+CLASSIFIER_SLUG_MAX_LENGTH = 150
+
 
 class AliasedModelQuerySet(models.QuerySet):
     def create_with_aliases(self, aliases=None, **kwargs):
@@ -67,7 +69,7 @@ class AliasedModel(models.Model):
 
     name = models.CharField(max_length=100, unique=True, help_text="Name.")
     slug = SimpleSlugField(
-        max_length=utils.SLUG_MAX_LENGTH, unique=True, editable=False
+        max_length=CLASSIFIER_SLUG_MAX_LENGTH, unique=True, editable=False
     )
     description = models.CharField(
         max_length=100, help_text="Brief description.", blank=True
@@ -81,7 +83,7 @@ class AliasedModel(models.Model):
 
     def clean(self):
         # Set slug from title
-        self.slug = utils.to_slug(self.name)
+        self.slug = utils.to_slug(self.name, max_length=CLASSIFIER_SLUG_MAX_LENGTH)
         super().clean()
 
     def save(self, *args, **kwargs):
@@ -118,7 +120,9 @@ class AliasedModel(models.Model):
         # Raise error if there is a matching alias, and the match has a different pk
         alias_model = self.aliases.model
         try:
-            match = alias_model.objects.get(text=utils.to_slug(self.name))
+            match = alias_model.objects.get(
+                text=utils.to_slug(self.name, max_length=CLASSIFIER_SLUG_MAX_LENGTH)
+            )
         except alias_model.DoesNotExist:
             return
         else:
@@ -179,7 +183,7 @@ class Alias(models.Model):
     """
 
     text = SimpleSlugField(
-        max_length=utils.SLUG_MAX_LENGTH, help_text="Alias text.", unique=True
+        max_length=CLASSIFIER_SLUG_MAX_LENGTH, help_text="Alias text.", unique=True
     )
     protected = models.BooleanField(
         default=False,
@@ -196,7 +200,7 @@ class Alias(models.Model):
         return self.text
 
     def clean(self):
-        self.text = utils.slugify(self.text)
+        self.text = utils.to_slug(self.text, max_length=CLASSIFIER_SLUG_MAX_LENGTH)
         super().clean()
 
     def save(self, *args, **kwargs):

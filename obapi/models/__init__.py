@@ -1,4 +1,5 @@
 from obapi.models.classifiers import (
+    CLASSIFIER_SLUG_MAX_LENGTH,
     Author,
     AuthorAlias,
     ExternalLink,
@@ -19,6 +20,7 @@ from obapi.models.content import (
     YoutubeContentItem,
 )
 from obapi.models.sequence import (
+    SEQUENCE_SLUG_MAX_LENGTH,
     BaseSequence,
     BaseSequenceMember,
     Sequence,
@@ -26,6 +28,7 @@ from obapi.models.sequence import (
 )
 
 __all__ = [
+    "CLASSIFIER_SLUG_MAX_LENGTH",
     "Author",
     "Idea",
     "Topic",
@@ -42,6 +45,7 @@ __all__ = [
     "SpotifyContentItem",
     "TextContentItem",
     "OBContentItem",
+    "SEQUENCE_SLUG_MAX_LENGTH",
     "BaseSequence",
     "BaseSequenceMember",
     "Sequence",

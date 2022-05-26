@@ -15,7 +15,14 @@ from obapi.converters import (
     SpotifyEpisodeURLConverter,
     YoutubeVideoURLConverter,
 )
-from obapi.models import Author, ExternalLink, Idea, Tag, Topic
+from obapi.models import (
+    CLASSIFIER_SLUG_MAX_LENGTH,
+    Author,
+    ExternalLink,
+    Idea,
+    Tag,
+    Topic,
+)
 
 
 class ContentItemQuerySet(InheritanceQuerySet):
@@ -67,7 +74,9 @@ class ContentItemQuerySet(InheritanceQuerySet):
             # Match by alias
             authors = [
                 Author.objects.get_or_create(
-                    alias__text=utils.to_slug(author_name),
+                    alias__text=utils.to_slug(
+                        author_name, max_length=CLASSIFIER_SLUG_MAX_LENGTH
+                    ),
                     defaults={"name": author_name},
                 )
                 for author_name in author_names
@@ -84,7 +93,11 @@ class ContentItemQuerySet(InheritanceQuerySet):
         with transaction.atomic():
             for classifier_name in classifier_names:
                 # Match by alias
-                query = Q(alias__text=utils.to_slug(classifier_name))
+                query = Q(
+                    alias__text=utils.to_slug(
+                        classifier_name, max_length=CLASSIFIER_SLUG_MAX_LENGTH
+                    )
+                )
                 try:
                     ideas.append(Idea.objects.get(query))
                     continue

@@ -3,7 +3,13 @@ import datetime
 import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from obapi.models import AudioContentItem, Sequence, TextContentItem, VideoContentItem
+from obapi.models import (
+    SEQUENCE_SLUG_MAX_LENGTH,
+    AudioContentItem,
+    Sequence,
+    TextContentItem,
+    VideoContentItem,
+)
 from obapi.utils import to_slug
 
 
@@ -16,14 +22,14 @@ class TestCreateSequence:
         Sequence.objects.create(title=seq_title, abstract="Description")
         # Assert
         seq = Sequence.objects.get(title=seq_title)
-        assert seq.slug == to_slug(seq_title)
+        assert seq.slug == to_slug(seq_title, max_length=SEQUENCE_SLUG_MAX_LENGTH)
         assert not seq.items.all().exists()
 
         # Act - modify title
         new_title = "New Title"
         seq.title = new_title
         seq.save()
-        assert seq.slug == to_slug(new_title)
+        assert seq.slug == to_slug(new_title, max_length=SEQUENCE_SLUG_MAX_LENGTH)
 
     def test_can_create_normal_sequence(self):
         # Arrange

@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from obapi import utils
 from obapi.models import Author, ContentItem, Idea, Tag, Topic
-from obapi.models.classifiers import IdeaAlias, TopicAlias
+from obapi.models.classifiers import CLASSIFIER_SLUG_MAX_LENGTH, IdeaAlias, TopicAlias
 
 
 @pytest.mark.django_db
@@ -120,7 +120,9 @@ class TestCreateWithAliases:
 
         # Assert
         assert t1.name == topic_name
-        assert t1.slug == utils.slugify(topic_name)
+        assert t1.slug == utils.to_slug(
+            topic_name, max_length=CLASSIFIER_SLUG_MAX_LENGTH
+        )
         assert t1.aliases.count() == alias_count
 
     @pytest.mark.parametrize(

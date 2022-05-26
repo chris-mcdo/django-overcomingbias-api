@@ -3,12 +3,14 @@ from obapi import utils
 from obapi.modelfields import SimpleSlugField
 from ordered_model.models import OrderedModel
 
+SEQUENCE_SLUG_MAX_LENGTH = 150
+
 
 class BaseSequence(models.Model):
     """Base class for Sequence models."""
 
     title = models.CharField(max_length=100, help_text="Sequence title.")
-    slug = SimpleSlugField(max_length=utils.SLUG_MAX_LENGTH, editable=False)
+    slug = SimpleSlugField(max_length=SEQUENCE_SLUG_MAX_LENGTH, editable=False)
     abstract = models.TextField(
         blank=True, max_length=5000, help_text="Description of sequence."
     )
@@ -22,7 +24,7 @@ class BaseSequence(models.Model):
 
     def clean(self):
         # Set slug from title
-        self.slug = utils.to_slug(self.title)
+        self.slug = utils.to_slug(self.title, max_length=SEQUENCE_SLUG_MAX_LENGTH)
         super().clean()
 
     def save(self, *args, **kwargs):

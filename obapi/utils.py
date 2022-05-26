@@ -2,7 +2,7 @@ import datetime
 import re
 
 import bleach
-from slugify import slugify
+import slugify
 
 ISO_8601_DURATION_PATTERN = re.compile(
     (
@@ -12,8 +12,6 @@ ISO_8601_DURATION_PATTERN = re.compile(
         r"$"
     )
 )
-
-SLUG_MAX_LENGTH = 100
 
 
 def parse_duration(duration):
@@ -33,5 +31,5 @@ def plaintext_to_html(text):
     return linkified_text
 
 
-def to_slug(text):
-    return slugify(text, max_length=SLUG_MAX_LENGTH)
+def to_slug(text, max_length):
+    return slugify.slugify(text, max_length=max_length)

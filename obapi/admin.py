@@ -34,7 +34,7 @@ from obapi.models import (
     TopicAlias,
     YoutubeContentItem,
 )
-from obapi.models.classifiers import ExternalLink
+from obapi.models.classifiers import CLASSIFIER_SLUG_MAX_LENGTH, ExternalLink
 
 # Inlines
 # https://docs.djangoproject.com/en/4.0/ref/contrib/admin/#inlinemodeladmin-objects
@@ -44,7 +44,9 @@ class AliasInlineFormset(BaseInlineFormSet):
     def clean(self):
         super().clean()
         # Ensure aliases differ from the name
-        name_slug = utils.to_slug(self.data["name"])
+        name_slug = utils.to_slug(
+            self.data["name"], max_length=CLASSIFIER_SLUG_MAX_LENGTH
+        )
         forms_to_delete = self.deleted_forms
         valid_forms = [
             form
