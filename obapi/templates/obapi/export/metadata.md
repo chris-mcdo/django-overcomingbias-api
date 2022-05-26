@@ -1,7 +1,7 @@
 {% autoescape off %}
 ---
 title:  {{ sequence.title }}
-author: {{ sequence.owner.username }}
+{% with owner=sequence.owner %}{% if owner %}author: {{ owner.username }}{% endif %}{% endwith %}
 {% if sequence.abstract %}abstract: |
     {{ sequence.abstract }}
 {% endif %}

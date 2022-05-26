@@ -1,20 +1,14 @@
 import datetime
 
 import pytest
-from django.contrib.auth.models import User
 from obapi.export import EPUBPandocWriter, MarkdownPandocWriter, export_sequence
-from obapi.models import ContentItem
+from obapi.models import ContentItem, Sequence
 
 from markers import require_spotify_api_auth, require_youtube_api_key
 
 
 @pytest.fixture
-def alice():
-    return User.objects.create_user("Alice", "alice@example.com", "alicepassword")
-
-
-@pytest.fixture
-def simple_sequence(alice):
+def simple_sequence():
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     item_1 = ContentItem.objects.create(
         title="Item 1",
@@ -26,7 +20,7 @@ def simple_sequence(alice):
         description_html="<p>Item 2</p><p>Has</p><p>3 paragraphs</p>",
         publish_date=now,
     )
-    seq = alice.sequences.create(title="Simple Sequence")
+    seq = Sequence.objects.create(title="Simple Sequence")
     seq.items.add(item_1, item_2)
 
     return seq
@@ -48,7 +42,6 @@ class TestExport:
     @require_spotify_api_auth
     def test_export_random_sequence(
         self,
-        alice,
         random_obcontentitems,
         random_youtubecontentitems,
         random_spotifycontentitems,
@@ -61,7 +54,7 @@ class TestExport:
             *random_obcontentitems(5),
         ]
 
-        random_sequence = alice.sequences.create(title="Random Sequence")
+        random_sequence = Sequence.objects.create(title="Random Sequence")
         random_sequence.items.set(content)
 
         epub_writer = EPUBPandocWriter()
@@ -72,10 +65,10 @@ class TestExport:
         # Act
         export_sequence(random_sequence, epub_writer)
 
-    def test_export_obcontent_sequence(self, alice, random_obcontentitems, tmp_path):
+    def test_export_obcontent_sequence(self, random_obcontentitems, tmp_path):
         content = random_obcontentitems(10)
 
-        obcontent_seq = alice.sequences.create(title="OB Sequence")
+        obcontent_seq = Sequence.objects.create(title="OB Sequence")
         obcontent_seq.items.set(content)
 
         epub_writer = EPUBPandocWriter()

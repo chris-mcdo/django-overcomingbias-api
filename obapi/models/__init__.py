@@ -18,7 +18,12 @@ from obapi.models.content import (
     VideoContentItem,
     YoutubeContentItem,
 )
-from obapi.models.sequence import Sequence, SequenceMember
+from obapi.models.sequence import (
+    BaseSequence,
+    BaseSequenceMember,
+    Sequence,
+    SequenceMember,
+)
 
 __all__ = [
     "Author",
@@ -37,6 +42,8 @@ __all__ = [
     "SpotifyContentItem",
     "TextContentItem",
     "OBContentItem",
+    "BaseSequence",
+    "BaseSequenceMember",
     "Sequence",
     "SequenceMember",
 ]

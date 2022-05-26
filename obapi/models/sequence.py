@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 from obapi import utils
 from obapi.modelfields import SimpleSlugField
@@ -8,32 +7,18 @@ from ordered_model.models import OrderedModel
 class BaseSequence(models.Model):
     """Base class for Sequence models."""
 
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        editable=False,
-        related_name="%(class)ss",
-    )
     title = models.CharField(max_length=100, help_text="Sequence title.")
     slug = SimpleSlugField(max_length=utils.SLUG_MAX_LENGTH, editable=False)
     abstract = models.TextField(
         blank=True, max_length=5000, help_text="Description of sequence."
     )
     items = models.ManyToManyField("ContentItem", through="BaseSequenceMember")
-    public = models.BooleanField(
-        default=False, help_text="Whether the sequence is public or private."
-    )
 
     def __str__(self):
         return self.title
 
     class Meta:
         abstract = True
-        constraints = [
-            models.UniqueConstraint(
-                fields=["owner", "slug"], name="unique_%(class)s_slug"
-            )
-        ]
 
     def clean(self):
         # Set slug from title
@@ -73,6 +58,11 @@ class BaseSequenceMember(OrderedModel):
 
 class Sequence(BaseSequence):
     items = models.ManyToManyField("ContentItem", through="SequenceMember")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["slug"], name="unique_sequence_slug")
+        ]
 
 
 class SequenceMember(BaseSequenceMember):
