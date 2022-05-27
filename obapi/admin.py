@@ -1,16 +1,15 @@
 from django.contrib import admin, messages
 from django.contrib.admin.helpers import Fieldset
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
-from django.contrib.admin.utils import model_ngettext
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.db import IntegrityError
 from django.forms import BaseInlineFormSet
 from django.http import Http404, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
-from django.utils.translation import ngettext
 from ordered_model.admin import OrderedInlineModelAdminMixin, OrderedTabularInline
 
+import obapi.tasks
 from obapi import utils
 from obapi.exceptions import APICallError
 from obapi.forms import (
@@ -386,43 +385,21 @@ class OBContentItemAdmin(ContentItemAdminTemplate):
             # Check permissions
             if not self.has_add_permission(request):
                 raise PermissionDenied
-            # Pull items
-            created_items = OBContentItem.objects.download_new_items()
-            # Messaging & logging
-            changecount = len(created_items)
-            changetype = "created"
-            for item in created_items:
-                self.log_addition(request, item, f"Created item {item}.")
+            # Pull items asynchronously
+            obapi.tasks.download_new_items(user_pk=request.user.pk)
+            success_message = "Downloading new posts. Please wait up to 30 minutes."
         elif "_sync" in request.POST:
             # Check permissions
             if not self.has_change_permission(request):
                 raise PermissionDenied
-            # Sync items
-            updated_items = OBContentItem.objects.update_edited_items()
-            # Messaging & logging
-            changecount = len(updated_items)
-            changetype = "updated"
-            for item in updated_items:
-                self.log_change(request, item, f"Updated item {item}.")
+            # Sync items asynchronously
+            obapi.tasks.update_edited_items(user_pk=request.user.pk)
+            success_message = "Updating existing posts. Please wait a few minutes."
         else:
             raise SuspiciousOperation
 
         # Send message
-        if changecount == 0:
-            msg = f"No items were {changetype}."
-            status = messages.INFO
-        else:
-            msg = ngettext(
-                "Successfully %(changetype)s %(changecount)s %(name)s.",
-                "Successfully %(changetype)s %(changecount)s %(name)s.",
-                changecount,
-            ) % {
-                "changetype": changetype,
-                "changecount": changecount,
-                "name": model_ngettext(self.model._meta, changecount),
-            }
-            status = messages.SUCCESS
-        self.message_user(request, msg, status)
+        self.message_user(request=request, message=success_message, level=messages.INFO)
 
         # Redirect logic - copied from internal method `_response_post_save`
         opts = self.model._meta
