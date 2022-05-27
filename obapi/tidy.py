@@ -82,6 +82,7 @@ def _tidy_ob_post_object(item_post):
     if item_post is None:
         return None
     internal_links = [_tidy_ob_internal_link(link) for link in item_post.internal_links]
+    text_html = _tidy_ob_post_html(item_post.text_html)
     post = {
         "author_names": [item_post.author],
         "classifier_names": [*item_post.tags, *item_post.categories],
@@ -90,7 +91,7 @@ def _tidy_ob_post_object(item_post):
         "publish_date": item_post.publish_date,
         "edit_date": item_post.edit_date,
         "word_count": item_post.word_count,
-        "text_html": _tidy_ob_post_html(item_post.text_html),
+        "text_html": text_html,
         "text_plain": item_post.plaintext,
         "item_id": item_post.name,
         "ob_post_number": item_post.number,
@@ -179,5 +180,5 @@ def _tidy_ob_post_html(text_html: str):
         del tag["class"]
 
     # Extract fragment within entry-content div
-    html_fragment = soup.find(class_="entry-content").decode_contents()
+    html_fragment = soup.find(class_="entry-content").decode_contents().strip()
     return html_fragment
