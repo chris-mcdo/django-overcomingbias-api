@@ -646,9 +646,9 @@ class Migration(migrations.Migration):
                 (
                     "disqus_id",
                     models.CharField(
+                        blank=True,
                         help_text="Post Disqus API string identifier.",
                         max_length=200,
-                        unique=True,
                     ),
                 ),
                 (

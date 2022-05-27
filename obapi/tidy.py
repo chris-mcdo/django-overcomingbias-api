@@ -83,6 +83,7 @@ def _tidy_ob_post_object(item_post):
         return None
     internal_links = [_tidy_ob_internal_link(link) for link in item_post.internal_links]
     text_html = _tidy_ob_post_html(item_post.text_html)
+    disqus_id = item_post.disqus_id or ""
     post = {
         "author_names": [item_post.author],
         "classifier_names": [*item_post.tags, *item_post.categories],
@@ -95,7 +96,7 @@ def _tidy_ob_post_object(item_post):
         "text_plain": item_post.plaintext,
         "item_id": item_post.name,
         "ob_post_number": item_post.number,
-        "disqus_id": item_post.disqus_id,
+        "disqus_id": disqus_id,
         "ob_likes": item_post.votes,
         "ob_comments": item_post.comments,
     }

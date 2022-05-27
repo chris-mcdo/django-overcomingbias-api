@@ -516,7 +516,7 @@ class OBContentItem(TextContentItem):
         "number ID", unique=True, help_text="Post number identifier."
     )
     disqus_id = models.CharField(
-        max_length=200, unique=True, help_text="Post Disqus API string identifier."
+        max_length=200, blank=True, help_text="Post Disqus API string identifier."
     )
     ob_likes = models.PositiveSmallIntegerField(
         "likes", blank=True, null=True, help_text="Number of likes."
