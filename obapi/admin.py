@@ -9,7 +9,6 @@ from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from ordered_model.admin import OrderedInlineModelAdminMixin, OrderedTabularInline
 
-import obapi.tasks
 from obapi import utils
 from obapi.exceptions import APICallError
 from obapi.forms import (
@@ -385,21 +384,16 @@ class OBContentItemAdmin(ContentItemAdminTemplate):
             # Check permissions
             if not self.has_add_permission(request):
                 raise PermissionDenied
-            # Pull items asynchronously
-            obapi.tasks.download_new_items(user_pk=request.user.pk)
-            success_message = "Downloading new posts. Please wait up to 30 minutes."
+
+            self.pull(request)
         elif "_sync" in request.POST:
             # Check permissions
             if not self.has_change_permission(request):
                 raise PermissionDenied
-            # Sync items asynchronously
-            obapi.tasks.update_edited_items(user_pk=request.user.pk)
-            success_message = "Updating existing posts. Please wait a few minutes."
+
+            self.sync(request)
         else:
             raise SuspiciousOperation
-
-        # Send message
-        self.message_user(request=request, message=success_message, level=messages.INFO)
 
         # Redirect logic - copied from internal method `_response_post_save`
         opts = self.model._meta
@@ -415,6 +409,42 @@ class OBContentItemAdmin(ContentItemAdminTemplate):
         else:
             post_url = reverse("admin:index", current_app=self.admin_site.name)
         return HttpResponseRedirect(post_url)
+
+    def pull(self, request):
+        """Download new posts."""
+        # Pull items
+        created_items = OBContentItem.objects.download_new_items()
+        # Log additions
+        for item in created_items:
+            self.log_addition(request, item, f"Created item {item}.")
+        # Message user
+        changecount = len(created_items)
+        if changecount == 0:
+            msg = "No items were created."
+            status = messages.INFO
+        else:
+            msg = f"Successfully created {changecount} item(s)."
+            status = messages.SUCCESS
+        self.message_user(request, msg, status)
+        return changecount
+
+    def sync(self, request):
+        """Updated existing posts."""
+        # Sync items
+        updated_items = OBContentItem.objects.update_edited_items()
+        # Log changes
+        for item in updated_items:
+            self.log_change(request, item, f"Updated item {item}.")
+        # Message user
+        changecount = len(updated_items)
+        if changecount == 0:
+            msg = "No items were updated."
+            status = messages.INFO
+        else:
+            msg = f"Successfully updated {changecount} item(s)."
+            status = messages.SUCCESS
+        self.message_user(request, msg, status)
+        return changecount
 
 
 class SequenceMemberInline(OrderedTabularInline):

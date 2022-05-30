@@ -10,7 +10,6 @@ load_dotenv(find_dotenv())
 INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
-    "huey.contrib.djhuey",
     "obapi",
 ]
 
