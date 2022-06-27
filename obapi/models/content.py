@@ -466,30 +466,50 @@ class OBContentItemQuerySet(ContentItemQuerySet):
         (OBPostShortURLConverter(), "ob_post_number"),
     )
 
-    def download_new_items(self, min_publish_date=None):
+    def download_new_items(self, min_edit_date=None, chunk_size=300):
         """Add posts whose names are not found in the database.
 
         Do not return items which were not successfully created.
         """
-        if min_publish_date is None:
+        breakpoint()
+        self.update_last_edit_dates()
+        breakpoint()
+        if min_edit_date is None:
             try:
-                # Ignore names of posts published before first download date
-                min_publish_date = self.earliest(
-                    "download_timestamp"
-                ).download_timestamp
+                # Take most recent edit date, among posts which haven't been edited
+                # since creation
+                min_edit_date = (
+                    self.filter(edit_date__lt=F("create_timestamp"))
+                    .latest("edit_date")
+                    .edit_date
+                )
+                breakpoint()
             except self.model.DoesNotExist:
                 # No items
                 pass
 
-        site_names = [
-            name
-            for name, date in assemble_ob_edit_dates().items()
-            if min_publish_date is None or date > min_publish_date
-        ]
+        # dict remembers insertion order
+        site_posts = dict(
+            sorted(assemble_ob_edit_dates().items(), key=lambda item: item[1])
+        )
+        breakpoint()
         db_names = self.values_list("item_id", flat=True)
-        names_to_add = [name for name in site_names if name not in db_names]
+        breakpoint()
+        missing_posts = {
+            name: date for name, date in site_posts.items() if name not in db_names
+        }
+        breakpoint()
+        names_to_add_unchunked = [
+            name
+            for name, date in missing_posts.items()
+            if min_edit_date is None or date > min_edit_date
+        ]
+        breakpoint()
+        names_to_add_chunked = names_to_add_unchunked[0:chunk_size]
+        breakpoint()
 
-        created_items = self.create_items(names_to_add)
+        created_items = self.create_items(names_to_add_chunked)
+        breakpoint()
         return [item for item in created_items if item is not None]
 
     def update_edited_items(self):
