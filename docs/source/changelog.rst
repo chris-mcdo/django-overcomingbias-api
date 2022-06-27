@@ -15,7 +15,7 @@ standard.
 .. Improved Documentation
 .. Trivial/Internal Changes
 
-django-overcomingbias-api 0.2.1 (2022-04-13)
+django-overcomingbias-api 0.2.1 (2022-06-27)
 --------------------------------------------
 
 Improvements
@@ -24,7 +24,7 @@ Improvements
 - Download overcomingbias posts in chunks by default to reduce memory usage.
 
 
-django-overcomingbias-api 0.2.0 (2022-04-13)
+django-overcomingbias-api 0.2.0 (2022-05-30)
 --------------------------------------------
 
 Features
