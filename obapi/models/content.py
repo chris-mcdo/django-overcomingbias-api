@@ -249,9 +249,16 @@ class ContentItem(models.Model):
     objects = ContentItemQuerySet.as_manager()
 
     create_timestamp = models.DateTimeField("creation date", auto_now_add=True)
-    update_timestamp = models.DateTimeField("update date", auto_now=True)
+    update_timestamp = models.DateTimeField(
+        "update date",
+        auto_now=True,
+        help_text="When the item was last updated - either by hand or automatically.",
+    )
     download_timestamp = models.DateTimeField(
-        "download date", editable=False, null=True
+        "download date",
+        editable=False,
+        null=True,
+        help_text="When the item was last downloaded.",
     )
 
     title = models.CharField(max_length=100, help_text="Title of content.")
@@ -493,7 +500,10 @@ class OBContentItemQuerySet(ContentItemQuerySet):
         return [result[0] for result in updated_items]
 
     def update_last_edit_dates(self):
-        """Synchronise edit dates with the overcomingbias site."""
+        """Synchronise edit dates with the overcomingbias site.
+
+        This uses the bulk_update method, so does not change the update_timestamp field.
+        """
         edit_dates = assemble_ob_edit_dates()
 
         all_items = self.all()
