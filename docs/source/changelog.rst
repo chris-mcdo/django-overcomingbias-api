@@ -15,6 +15,35 @@ standard.
 .. Improved Documentation
 .. Trivial/Internal Changes
 
+django-overcomingbias-api 0.2.1 (2022-04-13)
+--------------------------------------------
+
+Improvements
+^^^^^^^^^^^^
+
+- Download overcomingbias posts in chunks by default to reduce memory usage.
+
+
+django-overcomingbias-api 0.2.0 (2022-04-13)
+--------------------------------------------
+
+Features
+^^^^^^^^
+
+- Ability to export sequences of posts using pandoc.
+
+Improvements
+^^^^^^^^^^^^
+
+- Preprocessing of HTML content from overcomingbias posts
+
+- Refactored ModelAdmin classes (to allow for asynchronous execution of some actions)
+
+Bug fixes
+^^^^^^^^^
+
+- Various bug fixes
+
 django-overcomingbias-api 0.1.0 (2022-04-13)
 --------------------------------------------
 
