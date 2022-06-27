@@ -466,7 +466,7 @@ class OBContentItemQuerySet(ContentItemQuerySet):
         (OBPostShortURLConverter(), "ob_post_number"),
     )
 
-    def download_new_items(self, min_edit_date=None, chunk_size=300):
+    def download_new_items(self, min_edit_date=None):
         """Add posts whose names are not found in the database.
 
         Do not return items which were not successfully created.
@@ -485,22 +485,15 @@ class OBContentItemQuerySet(ContentItemQuerySet):
                 # No items
                 pass
 
-        # dict remembers insertion order
-        site_posts = dict(
-            sorted(assemble_ob_edit_dates().items(), key=lambda item: item[1])
-        )
-        db_names = self.values_list("item_id", flat=True)
-        missing_posts = {
-            name: date for name, date in site_posts.items() if name not in db_names
-        }
-        names_to_add_unchunked = [
+        site_names = [
             name
-            for name, date in missing_posts.items()
+            for name, date in assemble_ob_edit_dates().items()
             if min_edit_date is None or date > min_edit_date
         ]
-        names_to_add_chunked = names_to_add_unchunked[0:chunk_size]
+        db_names = self.values_list("item_id", flat=True)
+        names_to_add = [name for name in site_names if name not in db_names]
 
-        created_items = self.create_items(names_to_add_chunked)
+        created_items = self.create_items(names_to_add)
         return [item for item in created_items if item is not None]
 
     def update_edited_items(self):
