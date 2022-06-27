@@ -471,9 +471,7 @@ class OBContentItemQuerySet(ContentItemQuerySet):
 
         Do not return items which were not successfully created.
         """
-        breakpoint()
         self.update_last_edit_dates()
-        breakpoint()
         if min_edit_date is None:
             try:
                 # Take most recent edit date, among posts which haven't been edited
@@ -483,7 +481,6 @@ class OBContentItemQuerySet(ContentItemQuerySet):
                     .latest("edit_date")
                     .edit_date
                 )
-                breakpoint()
             except self.model.DoesNotExist:
                 # No items
                 pass
@@ -492,24 +489,18 @@ class OBContentItemQuerySet(ContentItemQuerySet):
         site_posts = dict(
             sorted(assemble_ob_edit_dates().items(), key=lambda item: item[1])
         )
-        breakpoint()
         db_names = self.values_list("item_id", flat=True)
-        breakpoint()
         missing_posts = {
             name: date for name, date in site_posts.items() if name not in db_names
         }
-        breakpoint()
         names_to_add_unchunked = [
             name
             for name, date in missing_posts.items()
             if min_edit_date is None or date > min_edit_date
         ]
-        breakpoint()
         names_to_add_chunked = names_to_add_unchunked[0:chunk_size]
-        breakpoint()
 
         created_items = self.create_items(names_to_add_chunked)
-        breakpoint()
         return [item for item in created_items if item is not None]
 
     def update_edited_items(self):
