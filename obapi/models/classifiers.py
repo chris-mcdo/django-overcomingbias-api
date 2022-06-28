@@ -258,7 +258,7 @@ class ExternalLink(models.Model):
     Here "external" means "outside the database".
     """
 
-    url = models.URLField(unique=True, help_text="Link URL.")
+    url = models.URLField(max_length=2048, help_text="Link URL.")
 
     def __str__(self):
         return self.url
