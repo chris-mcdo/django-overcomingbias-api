@@ -33,3 +33,9 @@ def plaintext_to_html(text):
 
 def to_slug(text, max_length):
     return slugify.slugify(text, max_length=max_length)
+
+
+def chunk_iterator(seq, chunk_size):
+    """An iterator which yields chunks of size `chunk_size` of a sequence `seq`."""
+    for i in range(0, len(seq), chunk_size):
+        yield seq[i : i + chunk_size]

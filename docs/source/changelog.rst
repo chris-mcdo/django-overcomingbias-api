@@ -22,6 +22,7 @@ Improvements
 ^^^^^^^^^^^^
 
 - Download overcomingbias posts in chunks by default to reduce memory usage.
+  Chunk size is controlled by the ``OBAPI_DOWNLOAD_BATCH_SIZE`` setting.
 
 
 django-overcomingbias-api 0.2.0 (2022-05-30)

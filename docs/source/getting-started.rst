@@ -38,6 +38,10 @@ apps:
         ...
     ]
 
+    # Optional setting - controls number of overcomingbias posts to hold in memory while
+    # downloading
+    # OBAPI_DOWNLOAD_BATCH_SIZE = 1000
+
 Last, run the migrations
 
 .. code-block:: console

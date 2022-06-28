@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models, transaction
 from django.db.models import F, Q
 from django.urls import reverse
@@ -23,6 +24,8 @@ from obapi.models import (
     Tag,
     Topic,
 )
+
+DOWNLOAD_BATCH_SIZE = getattr(settings, "OBAPI_DOWNLOAD_BATCH_SIZE", 10000)
 
 
 class ContentItemQuerySet(InheritanceQuerySet):
@@ -163,6 +166,19 @@ class ContentItemQuerySet(InheritanceQuerySet):
                 else:
                     created_items.append(None)
         return created_items
+
+    def bulk_create_items(self, item_ids, batch_size=DOWNLOAD_BATCH_SIZE):
+        """Create items from their IDs, in batches.
+
+        Returns
+        -------
+        The number of created items.
+        """
+        created_count = 0
+        for item_ids_chunk in utils.chunk_iterator(item_ids, batch_size):
+            created_items = self.create_items(item_ids_chunk)
+            created_count += sum(item is not None for item in created_items)
+        return created_count
 
     def update_items(self, exclude=None):
         """Update items in QuerySet, excluding certain fields.
@@ -491,10 +507,10 @@ class OBContentItemQuerySet(ContentItemQuerySet):
             if min_edit_date is None or date > min_edit_date
         ]
         db_names = self.values_list("item_id", flat=True)
-        names_to_add = [name for name in site_names if name not in db_names]
+        missing_names = [name for name in site_names if name not in db_names]
 
-        created_items = self.create_items(names_to_add)
-        return [item for item in created_items if item is not None]
+        created_item_count = self.bulk_create_items(missing_names)
+        return created_item_count
 
     def update_edited_items(self):
         """Update posts with unsaved edits."""
