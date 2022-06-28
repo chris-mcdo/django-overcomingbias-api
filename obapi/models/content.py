@@ -501,15 +501,24 @@ class OBContentItemQuerySet(ContentItemQuerySet):
                 # No items
                 pass
 
-        site_names = [
+        # sorting names by date is useful because: if there is an error during one batch
+        # of downloads, calling this function again (after fixing the error) starts
+        # downloading from the batch where the error occurred (rather than back at the
+        # beginning)
+        sorted_edit_dates = dict(
+            sorted(assemble_ob_edit_dates().items(), key=lambda item: item[1])
+        )
+        sorted_site_names = [
             name
-            for name, date in assemble_ob_edit_dates().items()
+            for name, date in sorted_edit_dates.items()
             if min_edit_date is None or date > min_edit_date
         ]
         db_names = self.values_list("item_id", flat=True)
-        missing_names = [name for name in site_names if name not in db_names]
+        sorted_missing_names = [
+            name for name in sorted_site_names if name not in db_names
+        ]
 
-        created_item_count = self.bulk_create_items(missing_names)
+        created_item_count = self.bulk_create_items(sorted_missing_names)
         return created_item_count
 
     def update_edited_items(self):
