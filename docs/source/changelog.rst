@@ -15,7 +15,22 @@ standard.
 .. Improved Documentation
 .. Trivial/Internal Changes
 
-django-overcomingbias-api 0.2.1 (2022-06-27)
+django-overcomingbias-api 0.2.3 (2022-06-27)
+--------------------------------------------
+
+Improvements
+^^^^^^^^^^^^
+
+- If an error occurs during downloading new posts, it is now possible to resume
+  "pulling" posts without having to reset the database.
+
+Bug fixes
+^^^^^^^^^
+
+- Increased the ``max_length`` of the ``ExternalLink`` ``url``s to 2048 (from the
+  Django default of 200). Solves errors when trying to store long URLs.
+
+django-overcomingbias-api 0.2.2 (2022-06-28)
 --------------------------------------------
 
 Improvements
