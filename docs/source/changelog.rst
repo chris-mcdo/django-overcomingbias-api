@@ -15,7 +15,16 @@ standard.
 .. Improved Documentation
 .. Trivial/Internal Changes
 
-django-overcomingbias-api 0.2.3 (2022-06-27)
+django-overcomingbias-api 0.2.4 (2022-06-28)
+--------------------------------------------
+
+Bug fixes
+^^^^^^^^^
+
+- Increased the ``max_length`` of various ``ContentItem`` fields to match their actual
+  maximum lengths.
+
+django-overcomingbias-api 0.2.3 (2022-06-28)
 --------------------------------------------
 
 Improvements
@@ -30,7 +39,7 @@ Bug fixes
 - Increased the ``max_length`` of the ``ExternalLink`` ``url``s to 2048 (from the
   Django default of 200). Solves errors when trying to store long URLs.
 
-django-overcomingbias-api 0.2.2 (2022-06-28)
+django-overcomingbias-api 0.2.2 (2022-06-27)
 --------------------------------------------
 
 Improvements
