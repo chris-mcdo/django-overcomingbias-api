@@ -277,7 +277,7 @@ class ContentItem(models.Model):
         help_text="When the item was last downloaded.",
     )
 
-    title = models.CharField(max_length=100, help_text="Title of content.")
+    title = models.CharField(max_length=200, help_text="Title of content.")
     description_html = models.TextField(
         max_length=5000, blank=True, help_text="HTML description of content."
     )
@@ -547,7 +547,7 @@ class OBContentItem(TextContentItem):
     objects = OBContentItemQuerySet.as_manager()
     item_id = models.CharField(
         "string ID",
-        max_length=100,
+        max_length=300,
         unique=True,
         help_text='Post string identifier. E.g. "2006/11/introduction"',
     )
@@ -555,7 +555,7 @@ class OBContentItem(TextContentItem):
         "number ID", unique=True, help_text="Post number identifier."
     )
     disqus_id = models.CharField(
-        max_length=200, blank=True, help_text="Post Disqus API string identifier."
+        max_length=400, blank=True, help_text="Post Disqus API string identifier."
     )
     ob_likes = models.PositiveSmallIntegerField(
         "likes", blank=True, null=True, help_text="Number of likes."
