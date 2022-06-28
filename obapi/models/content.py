@@ -124,9 +124,10 @@ class ContentItemQuerySet(InheritanceQuerySet):
     def get_or_create_external_links_by_urls(self, link_urls):
         if link_urls is None:
             return None
+        url_max_length = ExternalLink._meta.get_field("url").max_length
         with transaction.atomic():
             return [
-                ExternalLink.objects.get_or_create(url=link_url)[0]
+                ExternalLink.objects.get_or_create(url=link_url[:url_max_length])[0]
                 for link_url in link_urls
             ]
 

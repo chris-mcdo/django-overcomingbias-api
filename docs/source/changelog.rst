@@ -15,6 +15,16 @@ standard.
 .. Improved Documentation
 .. Trivial/Internal Changes
 
+django-overcomingbias-api 0.2.5 (2022-06-28)
+--------------------------------------------
+
+Bug fixes
+^^^^^^^^^
+
+- Truncate ``ExternalLink`` ``url``s to their maximum allowed length (2048). Avoids bug
+  with post 2019/04/identity-norms.
+
+
 django-overcomingbias-api 0.2.4 (2022-06-28)
 --------------------------------------------
 
