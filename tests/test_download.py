@@ -1,6 +1,7 @@
 import pytest
 from obapi.download import (
     _get_spotify_api_token,
+    download_essays,
     download_spotify_episodes_json,
     download_youtube_videos_json,
 )
@@ -68,3 +69,17 @@ class TestDownloadSpotifyEpisodesJSON:
             test_episode["episodes"][0]["show"]["publisher"]
             == "Mercatus Center at George Mason University"
         )
+
+
+class TestDownloadEssay:
+    def test_raises_error_for_invalid_essay_id(self):
+        with pytest.raises(APICallError):
+            download_essays(essay_ids=["blah"])
+
+    def test_works_correctly_for_valid_inputs(self):
+        # Act
+        test_essay_id = "Varytax"
+        test_essay = download_essays(essay_ids=[test_essay_id])[test_essay_id]
+        # Assert
+        assert isinstance(test_essay, str)
+        assert len(test_essay) > 0

@@ -12,6 +12,7 @@ from ordered_model.admin import OrderedInlineModelAdminMixin, OrderedTabularInli
 from obapi import utils
 from obapi.exceptions import APICallError
 from obapi.forms import (
+    AddEssayContentItemForm,
     AddOBContentItemForm,
     AddSpotifyContentItemForm,
     AddYoutubeContentItemForm,
@@ -33,6 +34,7 @@ from obapi.models import (
     YoutubeContentItem,
 )
 from obapi.models.classifiers import CLASSIFIER_SLUG_MAX_LENGTH, ExternalLink
+from obapi.models.content import EssayContentItem
 
 # Inlines
 # https://docs.djangoproject.com/en/4.0/ref/contrib/admin/#inlinemodeladmin-objects
@@ -445,6 +447,11 @@ class OBContentItemAdmin(ContentItemAdminTemplate):
             status = messages.SUCCESS
         self.message_user(request, msg, status)
         return changecount
+
+
+@admin.register(EssayContentItem)
+class EssayContentItemAdmin(ContentItemAdminTemplate):
+    AddForm = AddEssayContentItemForm
 
 
 class SequenceMemberInline(OrderedTabularInline):

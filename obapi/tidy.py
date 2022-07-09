@@ -36,6 +36,10 @@ def tidy_ob_post_objects(post_names, post_dict):
     return [_tidy_ob_post_object(post) for post in posts]
 
 
+def tidy_essays(essay_ids, essay_dict):
+    return [_tidy_essay(essay_id, essay_dict[essay_id]) for essay_id in essay_ids]
+
+
 def _tidy_youtube_video_json(item_json):
     """Tidy a YouTube API v3 response into a dictionary."""
     if item_json is None:
@@ -183,3 +187,23 @@ def _tidy_ob_post_html(text_html: str):
     # Extract fragment within entry-content div
     html_fragment = soup.find(class_="entry-content").decode_contents().strip()
     return html_fragment
+
+
+def _tidy_essay(essay_id, essay_html):
+    # parse html content
+    soup = bs4.BeautifulSoup(essay_html, "lxml")
+    text_plain = soup.body.text.strip()
+    essay = {
+        "item_id": essay_id,
+        "title": soup.title.string,
+        "author_names": ["Robin Hanson"],
+        "publish_date": datetime.datetime(2000, 1, 1, tzinfo=datetime.timezone.utc),
+        "text_html": soup.body.decode_contents().strip(),
+        "text_plain": text_plain,
+        "word_count": utils.count_words(text_plain),
+        "link_urls": [
+            tag["href"] for tag in soup.body.find_all("a") if tag.has_attr("href")
+        ],
+    }
+
+    return essay

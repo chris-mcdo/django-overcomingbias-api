@@ -4,6 +4,7 @@ YOUTUBE_VIDEO_ID_REGEX = r"[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]"
 SPOTIFY_EPISODE_ID_REGEX = r"[a-zA-Z0-9]{22}"
 OB_POST_NAME_REGEX = r"\d{4}/\d{2}/[a-z0-9-_%]+"
 OB_POST_NUMBER_REGEX = r"[0-9]{5}"
+ESSAY_ID_REGEX = r"[a-zA-Z0-9-_%]+"
 
 
 class URLConverter:
@@ -59,3 +60,15 @@ class OBPostShortURLConverter(URLConverter):
 
     def to_url(self, value):
         return f"https://www.overcomingbias.com/?p={value}"
+
+
+class EssayURLConverter(URLConverter):
+    regex = (
+        r"(?:https?://)"
+        r"(?:mason\.gmu\.edu/~rhanson|hanson\.gmu\.edu)"
+        rf"/({ESSAY_ID_REGEX})\.html?"
+        r"\S*"
+    )
+
+    def to_url(self, value):
+        return f"https://mason.gmu.edu/~rhanson/{value}.html"

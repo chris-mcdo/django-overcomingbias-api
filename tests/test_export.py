@@ -45,6 +45,7 @@ class TestExport:
         random_obcontentitems,
         random_youtubecontentitems,
         random_spotifycontentitems,
+        random_essaycontentitems,
         tmp_path,
     ):
         # Arrange
@@ -52,6 +53,7 @@ class TestExport:
             *random_youtubecontentitems(5),
             *random_spotifycontentitems(5),
             *random_obcontentitems(5),
+            *random_essaycontentitems(5),
         ]
 
         random_sequence = Sequence.objects.create(title="Random Sequence")

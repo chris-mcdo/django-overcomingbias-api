@@ -7,12 +7,14 @@ import datetime
 from functools import wraps
 
 from obapi.download import (
+    download_essays,
     download_ob_edit_dates,
     download_ob_post_objects,
     download_spotify_episodes_json,
     download_youtube_videos_json,
 )
 from obapi.tidy import (
+    tidy_essays,
     tidy_ob_post_objects,
     tidy_spotify_episodes_json,
     tidy_youtube_videos_json,
@@ -60,6 +62,13 @@ def assemble_spotify_content_items(episode_ids):
 def assemble_ob_content_items(post_names):
     post_dict = download_ob_post_objects(post_names)
     tidy_dict = tidy_ob_post_objects(post_names, post_dict)
+    return tidy_dict
+
+
+@download_timestamp
+def assemble_essay_content_items(essay_ids):
+    essay_dict = download_essays(essay_ids)
+    tidy_dict = tidy_essays(essay_ids, essay_dict)
     return tidy_dict
 
 

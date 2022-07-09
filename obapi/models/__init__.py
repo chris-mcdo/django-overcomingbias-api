@@ -13,6 +13,7 @@ from obapi.models.classifiers import (
 from obapi.models.content import (
     AudioContentItem,
     ContentItem,
+    EssayContentItem,
     OBContentItem,
     SpotifyContentItem,
     TextContentItem,
@@ -39,6 +40,7 @@ __all__ = [
     "TopicAlias",
     "ExternalLink",
     "ContentItem",
+    "EssayContentItem",
     "VideoContentItem",
     "YoutubeContentItem",
     "AudioContentItem",

@@ -1,5 +1,7 @@
 from django import forms
+
 from obapi.models import OBContentItem, SpotifyContentItem, YoutubeContentItem
+from obapi.models.content import EssayContentItem
 
 __all__ = [
     "AddContentItemForm",
@@ -31,3 +33,8 @@ class AddSpotifyContentItemForm(AddContentItemForm):
 class AddOBContentItemForm(AddContentItemForm):
     class Meta(AddContentItemForm.Meta):
         model = OBContentItem
+
+
+class AddEssayContentItemForm(AddContentItemForm):
+    class Meta(AddContentItemForm.Meta):
+        model = EssayContentItem

@@ -5,12 +5,14 @@ from django.urls import reverse
 from model_utils.managers import InheritanceQuerySet
 from obapi import utils
 from obapi.assemble import (
+    assemble_essay_content_items,
     assemble_ob_content_items,
     assemble_ob_edit_dates,
     assemble_spotify_content_items,
     assemble_youtube_content_items,
 )
 from obapi.converters import (
+    EssayURLConverter,
     OBPostLongURLConverter,
     OBPostShortURLConverter,
     SpotifyEpisodeURLConverter,
@@ -582,3 +584,36 @@ class OBContentItem(TextContentItem):
 
     class Meta:
         verbose_name = "overcomingbias post"
+
+
+class EssayContentItemQuerySet(ContentItemQuerySet):
+    assemble_by_ids = assemble_essay_content_items
+    url_converters = ((EssayURLConverter(), "item_id"),)
+
+
+class EssayContentItem(TextContentItem):
+    objects = EssayContentItemQuerySet.as_manager()
+    item_id = models.CharField(
+        "string ID",
+        max_length=300,
+        unique=True,
+        help_text='Essay string identifier. E.g. "Varytax"',
+    )
+
+    @property
+    def content_url(self):
+        return OBPostLongURLConverter().to_url(self.item_id)
+
+    def get_absolute_url(self):
+        return reverse("essaycontentitem_detail", kwargs={"item_id": self.item_id})
+
+    @property
+    def site_url(self):
+        return "https://mason.gmu.edu/~rhanson/"
+
+    @classmethod
+    def site_name(self):
+        return "Home Page"
+
+    class Meta:
+        verbose_name = "essay"

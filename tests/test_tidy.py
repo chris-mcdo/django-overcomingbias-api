@@ -1,12 +1,17 @@
 import datetime
 
 import pytest
-from obapi.download import download_spotify_episodes_json, download_youtube_videos_json
+from obapi.download import (
+    download_essays,
+    download_spotify_episodes_json,
+    download_youtube_videos_json,
+)
 from obapi.tidy import (
     _tidy_ob_post_html,
     _tidy_ob_post_object,
     _tidy_spotify_episode_json,
     _tidy_youtube_video_json,
+    tidy_essays,
 )
 from obscraper import get_post_by_url
 
@@ -184,3 +189,19 @@ class TestTidyOBPostHTML:
         original = "<p>Example<nobr></nobr><strong><nobr></nobr> </strong></p>"
         expected = "<p>Example<strong> </strong></p>"
         assert _tidy_ob_post_html(wrap(original)) == expected
+
+
+class TestTidyEssay:
+    def test_returns_expected_result_for_example_essay(self):
+        # Arrange
+        essay_id = "Varytax"
+        raw_essays = download_essays([essay_id])
+
+        # Act
+        tidied_essays = tidy_essays([essay_id], raw_essays)
+
+        essay = tidied_essays[0]
+
+        # Assert
+        assert essay["item_id"] == "Varytax"
+        assert essay["title"] == "Diet Pork"

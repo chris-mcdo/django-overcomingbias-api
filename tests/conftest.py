@@ -3,9 +3,13 @@ import random
 import obscraper
 import pytest
 from obapi.models import OBContentItem
-from obapi.models.content import SpotifyContentItem, YoutubeContentItem
+from obapi.models.content import (
+    EssayContentItem,
+    SpotifyContentItem,
+    YoutubeContentItem,
+)
 
-from sample_data import SAMPLE_SPOTIFY_IDS, SAMPLE_YOUTUBE_IDS
+from sample_data import SAMPLE_ESSAY_IDS, SAMPLE_SPOTIFY_IDS, SAMPLE_YOUTUBE_IDS
 
 
 def create_random_items(sample_ids, n, model):
@@ -48,3 +52,13 @@ def random_spotifycontentitems():
         return create_random_items(SAMPLE_SPOTIFY_IDS, n, SpotifyContentItem)
 
     return _random_spotifycontentitems
+
+
+@pytest.fixture(scope="session")
+def random_essaycontentitems():
+    """Factory function which populates the database with Essays."""
+
+    def _random_essaycontentitems(n):
+        return create_random_items(SAMPLE_ESSAY_IDS, n, EssayContentItem)
+
+    return _random_essaycontentitems

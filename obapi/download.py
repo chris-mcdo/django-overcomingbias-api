@@ -44,6 +44,19 @@ def download_ob_edit_dates():
     return get_edit_dates()
 
 
+def download_essays(essay_ids):
+    base_url = "https://mason.gmu.edu/~rhanson/"
+    default_headers = {"user-agent": "Mozilla/5.0"}
+    essay_dict = {}
+    with httpx.Client(headers=default_headers) as client:
+        for essay_id in essay_ids:
+            essay_url = f"{base_url}/{essay_id}.html"
+            response = client.get(essay_url)
+            _raise_for_status(response)
+            essay_dict[essay_id] = response.text
+    return essay_dict
+
+
 @cachetools.func.ttl_cache(ttl=3)
 def _get_spotify_api_token():
     auth_url = "https://accounts.spotify.com/api/token"

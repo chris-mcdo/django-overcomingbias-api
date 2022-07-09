@@ -1,0 +1,7 @@
+{% extends "./contentitem.html" %}
+
+{% block body %}
+    {% autoescape off %}
+        {{ item.text_html }}
+    {% endautoescape %}
+{% endblock %}

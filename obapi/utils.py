@@ -39,3 +39,15 @@ def chunk_iterator(seq, chunk_size):
     """An iterator which yields chunks of size `chunk_size` of a sequence `seq`."""
     for i in range(0, len(seq), chunk_size):
         yield seq[i : i + chunk_size]
+
+
+def count_words(text, ignore=None):
+    """Count the number of words in a string, ignoring some."""
+    if ignore is None:
+        ignore = []
+    text_without_punctuation = re.sub(r"[^a-zA-Z0-9\s]+", "", text)
+    text_without_special_chars = re.sub(r"\s+", " ", text_without_punctuation)
+    words = len(
+        [word for word in str.split(text_without_special_chars) if word not in ignore]
+    )
+    return words
