@@ -1,0 +1,25 @@
+# folders
+.github
+.pytest_cache
+tests
+output
+docs
+.venv
+*.egg-info
+# files
+.coveragerc
+.gitignore
+*.env
+**/__pycache__
+**/*.pyc
+*.code-workspace
+*.sqlite3
+*.log
+pytest.ini
+tox.ini
+.readthedocs.yaml
+
+# The following are needed by setuptools_scm and should not be ignored
+# .git
+# LICENSE
+# README.rst
