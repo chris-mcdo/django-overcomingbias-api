@@ -602,7 +602,7 @@ class EssayContentItem(TextContentItem):
 
     @property
     def content_url(self):
-        return OBPostLongURLConverter().to_url(self.item_id)
+        return EssayURLConverter().to_url(self.item_id)
 
     def get_absolute_url(self):
         return reverse("essaycontentitem_detail", kwargs={"item_id": self.item_id})
