@@ -475,3 +475,4 @@ class SequenceAdmin(OrderedInlineModelAdminMixin, admin.ModelAdmin):
     model = Sequence
     list_display = ("title",)
     inlines = (SequenceMemberInline,)
+    readonly_fields = ("create_timestamp", "update_timestamp")

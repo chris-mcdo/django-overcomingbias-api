@@ -15,6 +15,14 @@ class BaseSequence(models.Model):
         blank=True, max_length=5000, help_text="Description of sequence."
     )
     items = models.ManyToManyField("ContentItem", through="BaseSequenceMember")
+    create_timestamp = models.DateTimeField(
+        auto_now_add=True, help_text="When the sequence was created."
+    )
+    update_timestamp = models.DateTimeField(
+        "update date",
+        auto_now=True,
+        help_text="When the sequence was last updated.",
+    )
 
     def __str__(self):
         return self.title
@@ -56,6 +64,14 @@ class BaseSequenceMember(OrderedModel):
 
     def __str__(self):
         return f"{self.content_item.title} ({self.sequence.title})"
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        self.sequence.save(update_fields=["update_timestamp"])
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.sequence.save(update_fields=["update_timestamp"])
 
 
 class Sequence(BaseSequence):
