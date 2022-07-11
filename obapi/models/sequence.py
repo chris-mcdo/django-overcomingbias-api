@@ -29,6 +29,7 @@ class BaseSequence(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ("-update_timestamp",)
 
     def clean(self):
         # Set slug from title
@@ -77,7 +78,7 @@ class BaseSequenceMember(OrderedModel):
 class Sequence(BaseSequence):
     items = models.ManyToManyField("ContentItem", through="SequenceMember")
 
-    class Meta:
+    class Meta(BaseSequence.Meta):
         constraints = [
             models.UniqueConstraint(fields=["slug"], name="unique_sequence_slug")
         ]
