@@ -456,15 +456,8 @@ class EssayContentItemAdmin(ContentItemAdminTemplate):
 
 class SequenceMemberInline(OrderedTabularInline):
     model = SequenceMember
-    fields = (
-        "content_item",
-        "order",
-        "move_up_down_links",
-    )
-    readonly_fields = (
-        "order",
-        "move_up_down_links",
-    )
+    fields = ("content_item", "order", "move_up_down_links")
+    readonly_fields = ("order", "move_up_down_links")
     ordering = ("order",)
     extra = 1
     autocomplete_fields = ("content_item",)
