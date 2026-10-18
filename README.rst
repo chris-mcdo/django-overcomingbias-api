@@ -12,6 +12,20 @@ sites) and presents the data in a structured form via a
 Basic Usage
 -----------
 
+Legacy blog imports
+~~~~~~~~~~~~~~~~~~~
+
+The ``obscraper`` dependency targets the former WordPress blog. Its repository
+was archived after the blog moved to Substack in 2023, and its live post and
+edit-date fetching no longer works. This compatibility update preserves access
+to previously stored content; it does not add a Substack importer. The pull/sync
+instructions below describe the legacy interface.
+
+Tests of legacy post assembly, database updates and exports use synthetic
+``obscraper.Post`` responses at the download boundary. They still exercise the
+real application implementations, but do not verify live blog importing. Other
+live essay/YouTube/Spotify tests retain their existing credential requirements.
+
 A graphical user interface is provided through the
 `Django admin site <https://docs.djangoproject.com/en/dev/ref/contrib/admin/>`_.
 

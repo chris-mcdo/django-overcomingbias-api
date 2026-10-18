@@ -1,16 +1,16 @@
 name: main
 
-on: push
+on: [push, pull_request]
 
 jobs:
   run-tests:
-    uses: chris-mcdo/django-overcomingbias-api/.github/workflows/run-tests.yml@main
+    uses: ./.github/workflows/run-tests.yml
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   release:
     needs: [run-tests]
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-    uses: chris-mcdo/django-overcomingbias-api/.github/workflows/release.yml@main
+    uses: ./.github/workflows/release.yml
     secrets:
       PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

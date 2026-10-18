@@ -1,4 +1,6 @@
+import datetime
 import random
+from dataclasses import replace
 
 import obscraper
 import pytest
@@ -18,12 +20,55 @@ def create_random_items(sample_ids, n, model):
     return [item for item in created_items if item is not None]
 
 
-@pytest.fixture(scope="session")
-def obcontent_edit_dates():
-    return obscraper.get_edit_dates()
+@pytest.fixture
+def legacy_ob_posts(monkeypatch):
+    """Synthetic scraper responses; the legacy WordPress source is retired.
+
+    Patch only the download boundary. Assembly, tidying, database updates and
+    exports still use their real implementations. No live posts are fetched.
+    """
+    posts = {}
+    for i in range(1, 13):
+        timestamp = datetime.datetime(2020, 1, i, tzinfo=datetime.timezone.utc)
+        post = obscraper.Post(
+            name=f"2020/01/synthetic-post-{i:02d}",
+            number=10000 + i,
+            page_type="post",
+            page_status="publish",
+            page_format="standard",
+            title=f"Synthetic post {i}",
+            author="Synthetic Author",
+            publish_date=timestamp,
+            tags=["synthetic"],
+            categories=[],
+            text_html='<div class="entry-content"><p>Synthetic post body.</p></div>',
+            word_count=3,
+            internal_links=[],
+            external_links=[],
+            disqus_id=None,
+            votes=0,
+            comments=0,
+            edit_date=timestamp + datetime.timedelta(hours=1),
+        )
+        posts[post.name] = post
+
+    monkeypatch.setattr(
+        "obapi.download.get_edit_dates",
+        lambda: {name: post.edit_date for name, post in posts.items()},
+    )
+    monkeypatch.setattr(
+        "obapi.download.get_posts_by_names",
+        lambda names: {name: replace(posts[name]) if name in posts else None for name in names},
+    )
+    return posts
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
+def obcontent_edit_dates(legacy_ob_posts):
+    return {name: post.edit_date for name, post in legacy_ob_posts.items()}
+
+
+@pytest.fixture
 def random_obcontentitems(obcontent_edit_dates):
     """Factory function which populates the database with OvercomingBias posts."""
 
