@@ -85,15 +85,15 @@ class ContentItemSchema(ModelSchema):
     def resolve_item_id(obj):
         return obj.item_id
 
-    class Config:
+    class Meta:
         model = ContentItem
-        model_fields = ["title", "publish_date", "edit_date"]
+        fields = ["title", "publish_date", "edit_date"]
 
 
 class OBContentItemSchema(ContentItemSchema, ModelSchema):
-    class Config:
+    class Meta:
         model = OBContentItem
-        model_fields = [
+        fields = [
             "item_id",
             "title",
             "publish_date",
@@ -108,9 +108,9 @@ class OBContentItemSchema(ContentItemSchema, ModelSchema):
 
 
 class EssayContentItemSchema(ContentItemSchema, ModelSchema):
-    class Config:
+    class Meta:
         model = EssayContentItem
-        model_fields = [
+        fields = [
             "item_id",
             "title",
             "publish_date",
@@ -121,9 +121,9 @@ class EssayContentItemSchema(ContentItemSchema, ModelSchema):
 
 
 class YoutubeContentItemSchema(ContentItemSchema, ModelSchema):
-    class Config:
+    class Meta:
         model = YoutubeContentItem
-        model_fields = [
+        fields = [
             "item_id",
             "title",
             "publish_date",
@@ -137,9 +137,9 @@ class YoutubeContentItemSchema(ContentItemSchema, ModelSchema):
 
 
 class SpotifyContentItemSchema(ContentItemSchema, ModelSchema):
-    class Config:
+    class Meta:
         model = SpotifyContentItem
-        model_fields = [
+        fields = [
             "item_id",
             "title",
             "publish_date",
@@ -157,7 +157,7 @@ def _list_all_content():
     id_fields = (f"{content_type}__item_id" for content_type in CONTENT_TYPES)
     return (
         ContentItem.objects.only(
-            *ContentItemSchema.Config.model_fields,
+            *ContentItemSchema.Meta.fields,
             *id_fields,
         )
         .select_subclasses()
@@ -211,10 +211,10 @@ def list_recent_content(request, offset: conint(ge=0) = 0, count: conint(gt=0) =
     tags=["content"],
 )
 def get_overcomingbias_posts(
-    request, ids: List[constr(regex=OB_POST_NAME_REGEX)] = Query(...)
+    request, ids: List[constr(pattern=OB_POST_NAME_REGEX)] = Query(...)
 ):
     return (
-        OBContentItem.objects.only(*OBContentItemSchema.Config.model_fields)
+        OBContentItem.objects.only(*OBContentItemSchema.Meta.fields)
         .prefetch_related("authors", "ideas", "topics", "tags")
         .filter(item_id__in=ids)
     )
@@ -226,9 +226,9 @@ def get_overcomingbias_posts(
     summary="Get Essays",
     tags=["content"],
 )
-def get_essays(request, ids: List[constr(regex=ESSAY_ID_REGEX)] = Query(...)):
+def get_essays(request, ids: List[constr(pattern=ESSAY_ID_REGEX)] = Query(...)):
     return (
-        EssayContentItem.objects.only(*EssayContentItemSchema.Config.model_fields)
+        EssayContentItem.objects.only(*EssayContentItemSchema.Meta.fields)
         .prefetch_related("authors", "ideas", "topics", "tags")
         .filter(item_id__in=ids)
     )
@@ -241,10 +241,10 @@ def get_essays(request, ids: List[constr(regex=ESSAY_ID_REGEX)] = Query(...)):
     tags=["content"],
 )
 def get_youtube_videos(
-    request, ids: List[constr(regex=YOUTUBE_VIDEO_ID_REGEX)] = Query(...)
+    request, ids: List[constr(pattern=YOUTUBE_VIDEO_ID_REGEX)] = Query(...)
 ):
     return (
-        YoutubeContentItem.objects.only(*YoutubeContentItemSchema.Config.model_fields)
+        YoutubeContentItem.objects.only(*YoutubeContentItemSchema.Meta.fields)
         .prefetch_related("authors", "ideas", "topics", "tags")
         .filter(item_id__in=ids)
     )
@@ -257,10 +257,10 @@ def get_youtube_videos(
     tags=["content"],
 )
 def get_spotify_episodes(
-    request, ids: List[constr(regex=SPOTIFY_EPISODE_ID_REGEX)] = Query(...)
+    request, ids: List[constr(pattern=SPOTIFY_EPISODE_ID_REGEX)] = Query(...)
 ):
     return (
-        SpotifyContentItem.objects.only(*SpotifyContentItemSchema.Config.model_fields)
+        SpotifyContentItem.objects.only(*SpotifyContentItemSchema.Meta.fields)
         .prefetch_related("authors", "ideas", "topics", "tags")
         .filter(item_id__in=ids)
     )

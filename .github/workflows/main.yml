@@ -1,10 +1,10 @@
 name: main
 
-on: push
+on: [push, pull_request]
 
 jobs:
   run-tests:
-    uses: chris-mcdo/django-overcomingbias-api/.github/workflows/run-tests.yml@main
+    uses: ./.github/workflows/run-tests.yml
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 

@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "django-overcomingbias-api"
 description = "django-overcomingbias-api: an API to Robin Hanson's content"
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 keywords = ["django", "overcomingbias", "api", "scrape"]
 classifiers = [
@@ -18,27 +18,27 @@ classifiers = [
     "Operating System :: POSIX",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Internet",
     "Topic :: Internet :: WWW/HTTP",
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
     "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
     "Environment :: Web Environment",
     "Framework :: Django",
-    "Framework :: Django :: 4",
+    "Framework :: Django :: 5.2",
 ]
 dependencies = [
     "obscraper",
     "bleach>=5.0.0",
-    "Django>=4.0,<5.0",
-    "django-model-utils>=4.2.0",
+    "Django>=5.2,<5.3",
+    "django-model-utils>=5",
     "django-ordered-model>=3.5",
     "python-slugify>=5.0",
     "python-dateutil>=2.7",
     "pandadoc",
-    "django-ninja",
+    "django-ninja>=1.7,<2",
+    "pydantic>=2,<3",
 ]
 authors = [{ name = "Christopher McDonald", email = "cmcdonal33@gmail.com" }]
 dynamic = ["version"]
