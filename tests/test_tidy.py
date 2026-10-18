@@ -2,7 +2,6 @@ import datetime
 
 import pytest
 from markers import require_spotify_api_auth, require_youtube_api_key
-from obscraper import get_post_by_url
 
 from obapi.download import (
     download_essays,
@@ -62,21 +61,22 @@ class TestTidySpotifyEpisodeJSON:
 
 
 class TestTidyOBPostObject:
-    def test_returns_expected_result_for_example_post(self):
+    def test_maps_synthetic_post_fields(self, legacy_ob_posts):
         # Arrange
-        post_raw = get_post_by_url(
-            "https://www.overcomingbias.com/2009/03/signaling-in-economics.html"
-        )
+        post_raw = legacy_ob_posts["2020/01/synthetic-post-01"]
 
         # Act
         post_tidy = _tidy_ob_post_object(post_raw)
 
         # Assert
-        assert post_tidy["title"] == "Signaling in Economics"
+        assert post_tidy["title"] == "Synthetic post 1"
         assert post_tidy["publish_date"] == datetime.datetime(
-            2009, 3, 21, 22, 0, tzinfo=datetime.timezone.utc
+            2020, 1, 1, tzinfo=datetime.timezone.utc
         )
-        assert post_tidy["ob_post_number"] == 16642
+        assert post_tidy["ob_post_number"] == 10001
+        assert post_tidy["author_names"] == ["Synthetic Author"]
+        assert post_tidy["classifier_names"] == ["synthetic"]
+        assert post_tidy["text_html"] == "<p>Synthetic post body.</p>"
 
 
 class TestTidyOBPostHTML:
