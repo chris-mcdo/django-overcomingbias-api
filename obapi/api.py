@@ -37,7 +37,7 @@ api = NinjaAPI(
     title="OB API", description="API for Robin Hanson's content", urls_namespace="api"
 )
 
-CONTENT_TYPES = (
+CONTENT_TYPES = tuple(
     f"{prefix}contentitem" for prefix in ("ob", "essay", "spotify", "youtube")
 )
 
